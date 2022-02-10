@@ -1,0 +1,75 @@
+{% extends "layout.html" %}
+
+{% block content %}
+  <main class="container signup-section">
+    <div class="section-content">
+      <h2>Link your account</h2>
+
+      <form method="POST" action="/signup">
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+          {{ form.account_id_3commas.label }}
+
+          {% if form.account_id_3commas.errors %}
+            {% for error in form.account_id_3commas.errors %}
+              <p class="error-message">{{ error }}</p>
+            {% endfor %}
+          {% endif %}
+
+          {{ form.account_id_3commas }}
+        </div>
+
+        <div class="form-group">
+          {{ form.api_key_3commas.label }}
+
+          {% if form.api_key_3commas.errors %}
+            {% for error in form.api_key_3commas.errors %}
+              <p class="error-message">{{ error }}</p>
+            {% endfor %}
+          {% endif %}
+
+          {{ form.api_key_3commas }}
+        </div>
+
+        <div class="form-group">
+          {{ form.api_secret_3commas.label }}
+
+          {% if form.api_secret_3commas.errors %}
+            {% for error in form.api_secret_3commas.errors %}
+              <p class="error-message">{{ error }}</p>
+            {% endfor %}
+          {% endif %}
+
+          {{ form.api_secret_3commas }}
+        </div>
+
+        {{ form.submit(class="btn-primary") }}
+
+        <div class="form-group">
+          {{ form.api_key_ftx.label }}
+
+          {% if form.api_key_ftx.errors %}
+            {% for error in form.api_key_ftx.errors %}
+              <p class="error-message">{{ error }}</p>
+            {% endfor %}
+          {% endif %}
+
+          {{ form.api_key_ftx }}
+        </div>
+
+        <div class="form-group">
+          {{ form.api_secret_ftx.label }}
+
+          {% if form.api_secret_ftx.errors %}
+            {% for error in form.api_secret_ftx.errors %}
+              <p class="error-message">{{ error }}</p>
+            {% endfor %}
+          {% endif %}
+
+          {{ form.api_secret_ftx }}
+        </div>
+      </form>
+    </div>
+  </main>
+{% endblock %}
