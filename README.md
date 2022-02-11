@@ -4,3 +4,4 @@ Note that that the backend is heavily tested and bug fixed. But the frontend was
 #What does it exactly do?
 
 The bot creates 6 grid bots whose volumes are scaled from top to bottom.
+A link will be provided soon for testing purposes
