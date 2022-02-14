@@ -15,11 +15,11 @@ The project is still in heavy testing. So use on your own risk.
 
 How to use the webapp:
 
-1.Go to the URL above
-2.Enter you API information
-3.If you want to run and test the bot, just press run.
-4.If you want to clean up your un used empty 3commas grid bots for any purpose, just click on clean up.
-5.If you want to close the bot you ran before, just click on the close all botton.
+*1.Go to the URL above
+*2.Enter you API information
+*3.If you want to run and test the bot, just press run.
+*4.If you want to clean up your un used empty 3commas grid bots for any purpose, just click on clean up.
+*5.If you want to close the bot you ran before, just click on the close all botton.
 
 Notes:
   
