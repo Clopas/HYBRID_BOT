@@ -3,73 +3,83 @@
 {% block content %}
   <main class="container signup-section">
     <div class="section-content">
-      <h2>Link your account</h2>
 
-      <form method="POST" action="/signup">
+      <h2>Please enter the details below:</h2>
+
+      <form method="POST" action="/">
         {{ form.hidden_tag() }}
 
         <div class="form-group">
-          {{ form.account_id_3commas.label }}
+          {{ form.account_id_3commas_signup.label }}
 
-          {% if form.account_id_3commas.errors %}
-            {% for error in form.account_id_3commas.errors %}
+          {% if form.account_id_3commas_signup.errors %}
+            {% for error in form.account_id_3commas_signup.errors %}
               <p class="error-message">{{ error }}</p>
             {% endfor %}
           {% endif %}
 
-          {{ form.account_id_3commas }}
+          {{ form.account_id_3commas_signup }}
         </div>
 
         <div class="form-group">
-          {{ form.api_key_3commas.label }}
+          {{ form.api_key_3commas_signup.label }}
 
-          {% if form.api_key_3commas.errors %}
-            {% for error in form.api_key_3commas.errors %}
+          {% if form.api_key_3commas_signup.errors %}
+            {% for error in form.api_key_3commas_signup.errors %}
               <p class="error-message">{{ error }}</p>
             {% endfor %}
           {% endif %}
 
-          {{ form.api_key_3commas }}
+          {{ form.api_key_3commas_signup }}
         </div>
 
         <div class="form-group">
-          {{ form.api_secret_3commas.label }}
+          {{ form.api_secret_3commas_signup.label }}
 
-          {% if form.api_secret_3commas.errors %}
-            {% for error in form.api_secret_3commas.errors %}
+          {% if form.api_secret_3commas_signup.errors %}
+            {% for error in form.api_secret_3commas_signup.errors %}
               <p class="error-message">{{ error }}</p>
             {% endfor %}
           {% endif %}
 
-          {{ form.api_secret_3commas }}
+          {{ form.api_secret_3commas_signup }}
         </div>
 
-        {{ form.submit(class="btn-primary") }}
 
         <div class="form-group">
-          {{ form.api_key_ftx.label }}
+          {{ form.api_key_ftx_signup.label }}
 
-          {% if form.api_key_ftx.errors %}
-            {% for error in form.api_key_ftx.errors %}
+          {% if form.api_key_ftx_signup.errors %}
+            {% for error in form.api_key_ftx_signup.errors %}
               <p class="error-message">{{ error }}</p>
             {% endfor %}
           {% endif %}
 
-          {{ form.api_key_ftx }}
+          {{ form.api_key_ftx_signup }}
         </div>
 
         <div class="form-group">
-          {{ form.api_secret_ftx.label }}
+          {{ form.api_secret_ftx_signup.label }}
 
-          {% if form.api_secret_ftx.errors %}
-            {% for error in form.api_secret_ftx.errors %}
+          {% if form.api_secret_ftx_signup.errors %}
+            {% for error in form.api_secret_ftx_signup.errors %}
               <p class="error-message">{{ error }}</p>
             {% endfor %}
           {% endif %}
 
-          {{ form.api_secret_ftx }}
+          {{ form.api_secret_ftx_signup }}
         </div>
+
+        {{ form.run_button(class="btn-primary") }}
+        {{ form.close_all_button(class="btn-primary") }}
+        {{ form.cleanup_button(class="btn-primary") }}
+
       </form>
+
     </div>
   </main>
+  <div class="section-device">
+    <img src="static/img/hybridbot.jpg">
+  </div>
+
 {% endblock %}

@@ -23,7 +23,7 @@ def request_ftx(request_type, ftx_endpoint):
     return loaded_response
 
 
-print("log: start")
+# print("log: start")
 # ##################### Get price from FTX #################################
 pair_ftx = "EOS-PERP"
 
@@ -191,7 +191,7 @@ print(round(((SO2H - SO2L) / (SO2H * (SO2_qty[1]))) * 100, 3))
 print(round(((SO3H - SO3L) / (SO3H * (SO3_qty[1]))) * 100, 3))
 print(round(((SO4H - SO4L) / (SO4H * (SO4_qty[1]))) * 100, 3))
 print(round(((SO5H - SO5L) / (SO5H * (SO5_qty[1]))) * 100, 3))
-print("log: Printed inputs")
+# print("log: Printed inputs")
 
 # ###################### 3commas endpoints ###########################
 
@@ -233,7 +233,7 @@ def request_3commas(request_type, endpoint_url, data_url):
 
     url_request_3commas = base_url + endpoint_url + key_url + (('&' + data_url) if data_url != '' else '')
     headers_request_3commas = {'APIKEY': f'{api_key_3commas}', 'Signature': signature_request_3commas}
-
+    # print(url_request_3commas)  #test
     if request_type == 'GET':
         send_request_3commas = requests.get(url_request_3commas, headers=headers_request_3commas)
     elif request_type == 'POST':
@@ -248,7 +248,7 @@ def request_3commas(request_type, endpoint_url, data_url):
 
 
 # print(request_3commas('GET', id_grid_url, ''))  # test
-print("log: 3commas function")
+# print("log: 3commas function")
 
 # ##################### Bot lists ##########################################
 grid_list = request_3commas('GET', id_grid_url, '&limit=1000')
@@ -263,7 +263,7 @@ smart_trade_list = request_3commas('GET', id_smart_trade_url, '&status=active')
 
 
 # ##################### Clean up useless grid bots ##############################
-def cleanup():
+async def cleanup():
     for i in grid_list:
         if (i['is_enabled'] == False) and i['total_profits_count'] == '0':
             request_3commas('DELETE', delete_grid_url.format(id=i['id']), '')
@@ -271,7 +271,7 @@ def cleanup():
     print('Bots clean up is completed!')
 
 
-print("log: cleanup() function")
+# print("log: cleanup() function")
 
 
 # ################### Run the bots ############################################
@@ -353,7 +353,7 @@ def run():
         print('\nNew bots are created.')
 
 
-print("log: run() function")
+# print("log: run() function")
 
 
 # #################### Take profit and enter as soon as possible ########################################
@@ -376,11 +376,11 @@ def tp(profit_tp):
     tp()
 
 
-print("log: tp() function")
+# print("log: tp() function")
 
 
 # #################### stop bots ########################################
-def close_all():
+async def close_all():
     grid_list_stop = request_3commas('GET', id_grid_url, '&limit=1000')
     for i in grid_list_stop:
         if i['is_enabled'] == True and i['pair'] == pair_3commas:
@@ -394,4 +394,4 @@ def close_all():
     print("Close all done.")
 
 
-print("log: close_all() function")
+# print("log: close_all() function")

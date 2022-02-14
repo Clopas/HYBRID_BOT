@@ -54,7 +54,9 @@ a {
 }
 
 .section-device img {
-  width: 600px;
+  width: 400px;
+  margin: 10px;
+  padding-right: 250px;
 }
 
 .btn-primary {
@@ -69,6 +71,7 @@ a {
   text-align: center;
   text-decoration: none;
   text-transform: uppercase;
+  margin: 10px;
 }
 
 .btn-secondary {

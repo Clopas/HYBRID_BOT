@@ -1,15 +1,21 @@
-from flask_wtf import Form 
-from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import DataRequired, Email, Length
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField
+from wtforms.validators import DataRequired
 
-class SignupForm(Form):
-  # accountid
-  account_id_3commas = StringField('3commas Account ID', validators=[DataRequired("Please enter your 3commas account id")])
-  #accountkey
-  api_key_3commas = StringField('3commas Account API KEY', validators=[DataRequired("Please enter your 3commas account API KEY")])
-  #accountsecret
-  api_secret_3commas = StringField('3commas Account API Secret', validators=[DataRequired("Please enter your 3commas account API Secret")])
-  api_key_ftx = StringField('FTX API KEY', validators=[DataRequired("Please enter your FTX account API Secret")])
-  api_secret_ftx = StringField('FTX API SECRET', validators=[DataRequired("Please enter your FTX account API Secret")])
 
-  submit = SubmitField('Run')
+class SignupForm(FlaskForm):
+    account_id_3commas_signup = StringField('3commas Account ID:',
+                                            validators=[DataRequired("Please enter your 3commas account id")])
+    api_key_3commas_signup = StringField('3commas API KEY:',
+                                         validators=[DataRequired("Please enter your 3commas account API KEY")])
+    api_secret_3commas_signup = StringField('3commas API Secret:',
+                                            validators=[
+                                                DataRequired("Please enter your 3commas account API Secret")])
+    api_key_ftx_signup = StringField('FTX API KEY:',
+                                     validators=[DataRequired("Please enter your FTX account API key")])
+    api_secret_ftx_signup = StringField('FTX API SECRET:',
+                                        validators=[DataRequired("Please enter your FTX account API Secret")])
+
+    run_button = SubmitField('Run')
+    close_all_button = SubmitField('Close all')
+    cleanup_button = SubmitField('Clean up')
