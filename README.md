@@ -15,13 +15,13 @@ The project is still in heavy testing. So use on your own risk.
 
 How to use the webapp:
 
-*1.Go to the URL above
-*2.Enter you API information
-*3.If you want to run and test the bot, just press run.
-*4.If you want to clean up your un used empty 3commas grid bots for any purpose, just click on clean up.
-*5.If you want to close the bot you ran before, just click on the close all botton.
+* Go to the URL above
+* Enter you API information
+* If you want to run and test the bot, just press run.
+* If you want to clean up your unused and empty 3commas grid bots (for any purpose), click on clean up.
+* If you want to close the bot you ran before, click on the close all botton.
 
 Notes:
   
-  * Right now the test webapp only works with FTX EOS-PERP by default.
+  * Right now the test webapp only works with FTX EOS-PERP pair by default.
   * For security reasons it doesn't yet save your credentials until the app is fully bug tested. So you have to enter your info each time.
