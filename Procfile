@@ -1,1 +1,1 @@
-web: gunicorn DCA-GRID-HYBRID-3COMMAS:routes
+web: gunicorn 'routes:signup()'
