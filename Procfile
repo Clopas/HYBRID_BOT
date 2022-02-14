@@ -1,1 +1,1 @@
-web: gunicorn DCA-GRID-HYBRID-3COMMAS:routes.py
+web: gunicorn routes.py
