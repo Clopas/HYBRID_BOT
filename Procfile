@@ -1,1 +1,1 @@
-web: gunicorn 'routes:signup()'
+web: gunicorn routes
