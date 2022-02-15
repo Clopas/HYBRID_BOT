@@ -22,6 +22,7 @@ How to use the webapp:
 * If you want to close the bot you ran before, click on the close all botton.
 
 Notes:
-  
-  * Right now the test webapp only works with FTX EOS-PERP pair by default.
-  * For security reasons it doesn't yet save your credentials until the app is fully bug tested. So you have to enter your info each time.
+
+* Beast mode should be enabled in 3commas settings.
+* Right now the test webapp only works with FTX EOS-PERP pair by default.
+* For security reasons it doesn't yet save your credentials until the app is fully bug tested. So you have to enter your info each time.
