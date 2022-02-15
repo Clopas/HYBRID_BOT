@@ -22,7 +22,11 @@ How to use the webapp:
 * If you want to close the bot you ran before, click on the close all botton.
 
 Notes:
-
+* Obviously the provided link to web app is a prototype version and is as a proof of concept. The full functioning web app will come soon... Please contact me via @blockchainophil on twitter/instagram/telegram if you have any questions or are interested to know more.
 * Beast mode should be enabled in 3commas settings.
 * Right now the test webapp only works with FTX EOS-PERP pair by default.
 * For security reasons it doesn't yet save your credentials until the app is fully bug tested. So you have to enter your info each time.
+
+In case you want to buy me a cup of coffe or anything: ;)
+
+0x5931D3609b361e6d2c7729Da7Edb8797eF25458e
