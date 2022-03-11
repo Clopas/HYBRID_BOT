@@ -162,7 +162,7 @@ print('Total balance: ' + str(round(balance, 2)) + '$\n')
 # ##################### Grids quantities #############################
 
 def grids_quantity(grid_volume):
-    a = [13, 14, 15, 16, 17, 18, 19, 20]
+    a = [14, 15, 16, 17, 18, 19, 20]
     for i in a[:]:
         if abs((grid_volume / i) - round(grid_volume / i, 1)) <= 0.1:
             return [round(grid_volume / i, 1), i]
