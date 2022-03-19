@@ -86,6 +86,9 @@ SO4L = price_pair + (price_pair * (-0.41))
 
 SO5H = price_pair + (price_pair * (-0.41))
 SO5L = price_pair + (price_pair * (-0.5))
+
+print(SO2H)
+print(SO2H/price_pair)
 # ##################### 3commas bot inputs for 40% D.D ########################
 
 # BOH = price_pair + (price_pair * (0.04))
@@ -194,6 +197,14 @@ print(round(((SO5H - SO5L) / (SO5H * (SO5_qty[1]))) * 100, 3))
 # print("log: Printed inputs")
 
 # ###################### 3commas endpoints ###########################
+create_dca_url = '/ver1/bots/create_bot'  # POST
+disable_dca_url = '/ver1/bots/{bot_id}/disable'   #POST
+enable_dca_url = '/ver1/bots/{bot_id}/enable'   #POST
+delete_dca_url = '/ver1/bots/{bot_id}/delete' #POST
+edit_dca_url = '/ver1/bots/{bot_id}/update'  # PATCH
+#id_dca_url = '/ver1/grid_bots'  # GET
+asap_dca_url = '/ver1/bots/{bot_id}/start_new_deal'  #POST
+
 
 create_grid_url = '/ver1/grid_bots/manual'  # POST
 disable_grid_url = '/ver1/grid_bots/{id}/disable'  # POST
@@ -201,6 +212,7 @@ enable_grid_url = '/ver1/grid_bots/{id}/enable'  # POST
 edit_grid_url = '/ver1/grid_bots/{id}/manual'  # PATCH
 delete_grid_url = '/ver1/grid_bots/{id}'  # DELETE
 id_grid_url = '/ver1/grid_bots'  # GET
+
 
 create_smart_trade_url = '/v2/smart_trades'  # POST
 close_smart_trade_url = '/v2/smart_trades/{id}/close_by_market'  # POST
@@ -210,10 +222,8 @@ delete_smart_trade_url = '/v2/smart_trades/{id}'  # DELETE
 id_smart_trade_url = '/v2/smart_trades'  # GET
 # ##################### 3commas data_urls #########################
 
-BO_grid_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={BOH}&lower_price={BOL}&quantity_per_grid={BO_qty[0]}&grids_quantity={BO_qty[1]}&leverage_type=cross&is_enabled=true"
-BO_smart_trade_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&instant=false&position%5Btype%5D=buy&position%5Border_type%5D=market&stop_loss%5Benabled%5D=false&take_profit%5Benabled%5D=false&position%5Bunits%5D%5Bvalue%5D={0.5 * BO}"
+BO_dca_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&base_order_volume=50&take_profit='5'&safety_order_volume=4.32&martingale_volume_coefficient=1&martingale_step_coefficient=1&max_safety_orders=20&active_safety_orders_count=20&safety_order_step_percentage=0.675&take_profit_type=total&leverage_type=cross"
 
-SO1_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO1H}&lower_price={SO1L}&quantity_per_grid={SO1_qty[0]}&grids_quantity={SO1_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
 SO2_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO2H}&lower_price={SO2L}&quantity_per_grid={SO2_qty[0]}&grids_quantity={SO2_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
 SO3_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO3H}&lower_price={SO3L}&quantity_per_grid={SO3_qty[0]}&grids_quantity={SO3_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
 SO4_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO4H}&lower_price={SO4L}&quantity_per_grid={SO4_qty[0]}&grids_quantity={SO4_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
@@ -272,6 +282,8 @@ async def cleanup():
 
 
 # print("log: cleanup() function")
+def create_dca():
+    request_3commas('POST', create_dca_url, BO_dca_data_url)
 
 
 # ################### Run the bots ############################################
@@ -283,18 +295,8 @@ def run():
             if i['pair'] == pair_3commas:
                 smart_trade_close = request_3commas('POST', close_smart_trade_url.format(id=i['id']), '')
                 print("\nA smart trade is closed:\n" + str(smart_trade_close))
-        bo_smart_trade_create = request_3commas('POST', create_smart_trade_url, BO_smart_trade_data_url)
-        print('\nbo_smart_trade_created:\n' + str(bo_smart_trade_create))
 
-        bo_grid_edited = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[0][0]),
-                                         BO_grid_data_url)
-        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[0][0]), '')
-        print('\nbo_grid_edited:\n' + str(bo_grid_edited))
-
-        so1_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[1][0]),
-                                   SO1_data_url)
-        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[1][0]), '')
-        print('\nso1_edited:\n' + str(so1_edit))
+        request_3commas('POST', create_dca_url, BO_dca_data_url)
 
         so2_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[2][0]),
                                    SO2_data_url)
@@ -322,18 +324,7 @@ def run():
         if len(enabled_grid_list_new) > 0:
             print("I couldn't find 6 grids to edit them. So I am creating new ones.")
         enabled_grid_list_new.clear()
-
-        bo_smart_trade_create = request_3commas('POST', create_smart_trade_url, BO_smart_trade_data_url)
-        print('\nbo_smart_trade_create:\n' + str(bo_smart_trade_create))
-
-        bo_grid_create = request_3commas('POST', create_grid_url, BO_grid_data_url)
-        enabled_grid_list_new.append([bo_grid_create['id'], bo_grid_create['lower_price']])
-        print('\nbo_grid_create:\n' + str(bo_grid_create))
-
-        so1_create = request_3commas('POST', create_grid_url, SO1_data_url)
-        enabled_grid_list_new.append([so1_create['id'], so1_create['lower_price']])
-        print('\nso1_create:\n' + str(so1_create))
-
+        request_3commas('POST', create_dca_url, BO_dca_data_url)
         so2_create = request_3commas('POST', create_grid_url, SO2_data_url)
         enabled_grid_list_new.append([so2_create['id'], so2_create['lower_price']])
         print('\nso2_create:\n' + str(so2_create))
@@ -387,11 +378,12 @@ async def close_all():
             disable_grid_stop = request_3commas('POST', disable_grid_url.format(id=i['id']), '')
             print(f"\nGrid {i['id']} is disabled.\n" + str(disable_grid_stop))
 
-    for i in request_3commas('GET', id_smart_trade_url, '&status=active'):
-        if i['pair'] == pair_3commas:
+    for i in request_3commas('GET', '/ver1/bots/account_trade_info', f'&account_id={account_id_3commas}'):
+        if i['pairs'] == [pair_3commas]:
             smart_trade_close_stop = request_3commas('POST', close_smart_trade_url.format(id=i['id']), '')
-            print("\nA smart trade is closed:\n" + str(smart_trade_close_stop))
+            print("\nA DCA is closed:\n" + str(smart_trade_close_stop))
     print("Close all done.")
 
-
+print()
 # print("log: close_all() function")
+
