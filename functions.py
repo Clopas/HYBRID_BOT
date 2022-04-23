@@ -128,35 +128,35 @@ SO1V40 = 30.1
 
 BO = (37 / price_pair)
 BOO = 37
-print('\nBase currency volumes:\n' + str(round(BO)) + ' ' + pair_ftx)
+#print('\nBase currency volumes:\n' + str(round(BO)) + ' ' + pair_ftx)
 SO1 = (SO1V50 / (0.5 * (SO1H + SO1L)))
 SO1O = SO1V50
-print(str(round(SO1, 2)) + ' ' + pair_ftx)
+#print(str(round(SO1, 2)) + ' ' + pair_ftx)
 SO2 = (SO1V50 * SCALE50) / (0.5 * (SO2H + SO2L))
 SO2O = SO1V50 * SCALE50
-print(str(round(SO2, 2)) + ' ' + pair_ftx)
+#print(str(round(SO2, 2)) + ' ' + pair_ftx)
 SO3 = (SO1V50 * SCALE50 ** 2) / (0.5 * (SO3H + SO3L))
 SO3O = SO1V50 * SCALE50 ** 2
-print(str(round(SO3, 2)) + ' ' + pair_ftx)
+#print(str(round(SO3, 2)) + ' ' + pair_ftx)
 SO4 = (SO1V50 * SCALE50 ** 3) / (0.5 * (SO4H + SO4L))
 SO4O = SO1V50 * SCALE50 ** 3
-print(str(round(SO4, 2)) + ' ' + pair_ftx)
+#print(str(round(SO4, 2)) + ' ' + pair_ftx)
 SO5 = (SO1V50 * SCALE50 ** 4) / (0.5 * (SO5H + SO5L))
 SO5O = SO1V50 * SCALE50 ** 4
-print(str(round(SO5, 2)) + ' ' + pair_ftx)
+#print(str(round(SO5, 2)) + ' ' + pair_ftx)
 
-print(f"Total base currency size: {round((BO + SO1 + SO2 + SO3 + SO4 + SO5), 2)}")
-print('BOO+SO1O+SO2O+SO3O+SO4O+SO5O)/price:' + str(round((BOO + SO1O + SO2O + SO3O + SO4O + SO5O) / price_pair, 2)))
-# ##################### Print $$$ volume (quote currency volume) ####################
-print('\nQuote currency volumes:\n' + str(BOO) + "$")
-print(str(round(SO1O, 2)) + "$")
-print(str(round(SO2O, 2)) + "$")
-print(str(round(SO3O, 2)) + "$")
-print(str(round(SO4O, 2)) + "$")
-print(str(round(SO5O, 2)) + "$")
+#print(f"Total base currency size: {round((BO + SO1 + SO2 + SO3 + SO4 + SO5), 2)}")
+#print('BOO+SO1O+SO2O+SO3O+SO4O+SO5O)/price:' + str(round((BOO + SO1O + SO2O + SO3O + SO4O + SO5O) / price_pair, 2)))
+# ##################### #Print $$$ volume (quote currency volume) ####################
+#print('\nQuote currency volumes:\n' + str(BOO) + "$")
+#print(str(round(SO1O, 2)) + "$")
+#print(str(round(SO2O, 2)) + "$")
+#print(str(round(SO3O, 2)) + "$")
+#print(str(round(SO4O, 2)) + "$")
+#print(str(round(SO5O, 2)) + "$")
 
 balance = BOO + SO1O + SO2O + SO3O + SO4O + SO5O
-print('Total balance: ' + str(round(balance, 2)) + '$\n')
+#print('Total balance: ' + str(round(balance, 2)) + '$\n')
 
 
 # ##################### Grids quantities #############################
@@ -171,26 +171,26 @@ def grids_quantity(grid_volume):
 
 
 BO_qty = grids_quantity(BO)
-print(BO_qty)
+#print(BO_qty)
 SO1_qty = grids_quantity(SO1)
-print(SO1_qty)
+#print(SO1_qty)
 SO2_qty = grids_quantity(SO2)
-print(SO2_qty)
+#print(SO2_qty)
 SO3_qty = grids_quantity(SO3)
-print(SO3_qty)
+#print(SO3_qty)
 SO4_qty = grids_quantity(SO4)
-print(SO4_qty)
+#print(SO4_qty)
 SO5_qty = grids_quantity(SO5)
-print(SO5_qty)
-# ###################### Print % of steps in every grid ###################
+#print(SO5_qty)
+# ###################### #Print % of steps in every grid ###################
 
-print('\n% of steps in every grid:')
-print(round(((BOH - BOL) / (BOH * (BO_qty[1]))) * 100, 3))
-print(round(((SO1H - SO1L) / (SO1H * (SO1_qty[1]))) * 100, 3))
-print(round(((SO2H - SO2L) / (SO2H * (SO2_qty[1]))) * 100, 3))
-print(round(((SO3H - SO3L) / (SO3H * (SO3_qty[1]))) * 100, 3))
-print(round(((SO4H - SO4L) / (SO4H * (SO4_qty[1]))) * 100, 3))
-print(round(((SO5H - SO5L) / (SO5H * (SO5_qty[1]))) * 100, 3))
+#print('\n% of steps in every grid:')
+#print(round(((BOH - BOL) / (BOH * (BO_qty[1]))) * 100, 3))
+#print(round(((SO1H - SO1L) / (SO1H * (SO1_qty[1]))) * 100, 3))
+#print(round(((SO2H - SO2L) / (SO2H * (SO2_qty[1]))) * 100, 3))
+#print(round(((SO3H - SO3L) / (SO3H * (SO3_qty[1]))) * 100, 3))
+#print(round(((SO4H - SO4L) / (SO4H * (SO4_qty[1]))) * 100, 3))
+#print(round(((SO5H - SO5L) / (SO5H * (SO5_qty[1]))) * 100, 3))
 # print("log: Printed inputs")
 
 # ###################### 3commas endpoints ###########################
@@ -263,7 +263,7 @@ smart_trade_list = request_3commas('GET', id_smart_trade_url, '&status=active')
 
 
 # ##################### Clean up useless grid bots ##############################
-async def cleanup():
+def cleanup():
     for i in grid_list:
         if (i['is_enabled'] == False) and i['total_profits_count'] == '0':
             request_3commas('DELETE', delete_grid_url.format(id=i['id']), '')
@@ -380,7 +380,7 @@ def tp(profit_tp):
 
 
 # #################### stop bots ########################################
-async def close_all():
+def close_all():
     grid_list_stop = request_3commas('GET', id_grid_url, '&limit=1000')
     for i in grid_list_stop:
         if i['is_enabled'] == True and i['pair'] == pair_3commas:
