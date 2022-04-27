@@ -8,7 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set VIRTUAL_ENV=D:\Projects\HYBRID-3COMMAS-BOT\venv
+set VIRTUAL_ENV=D:\Projects\hybrid_bot\venv
 
 if not defined PROMPT set PROMPT=$P$G
 

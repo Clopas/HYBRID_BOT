@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/DCA-GRID-HYBRID-3COMMAS.iml" filepath="$PROJECT_DIR$/.idea/DCA-GRID-HYBRID-3COMMAS.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/hybrid_bot.iml" filepath="$PROJECT_DIR$/.idea/hybrid_bot.iml" />
     </modules>
   </component>
 </project>

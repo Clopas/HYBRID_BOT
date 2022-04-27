@@ -38,7 +38,7 @@ def price():
 
 
 price_pair = price()
-print(f"{pair_ftx} price is {price_pair}")
+#print(f"{pair_ftx} price is {price_pair}")
 
 # ##################### Get position details from FTX ######################
 balance = 0
@@ -382,6 +382,8 @@ def tp(profit_tp):
 # #################### stop bots ########################################
 def close_all():
     grid_list_stop = request_3commas('GET', id_grid_url, '&limit=1000')
+    print(id_grid_url)
+    print(grid_list_stop)
     for i in grid_list_stop:
         if i['is_enabled'] == True and i['pair'] == pair_3commas:
             disable_grid_stop = request_3commas('POST', disable_grid_url.format(id=i['id']), '')
@@ -395,3 +397,10 @@ def close_all():
 
 
 # print("log: close_all() function")
+# #################### main function ########################################
+def main():
+    close_all()
+    cleanup()
+    run()
+    # tp(0.25)
+    pass
