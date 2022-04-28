@@ -1,5 +1,5 @@
-#import importlib
-#import sys,os
+# import importlib
+# import sys,os
 import json
 import requests
 import hmac
@@ -8,12 +8,13 @@ import time
 from requests import Request, session
 from credentials import *
 
+
 # credentials
-#account_id_3commas = '' #a
-#api_key_3commas = '' #b
-#api_secret_3commas = '' #c
-#api_key_ftx = '' #d
-#api_secret_ftx = '' #e
+# account_id_3commas = '' #a
+# api_key_3commas = '' #b
+# api_secret_3commas = '' #c
+# api_key_ftx = '' #d
+# api_secret_ftx = '' #e
 
 # ##################### FTX request function ###############################
 
@@ -48,7 +49,7 @@ def price():
 
 
 price_pair = price()
-#print(f"{pair_ftx} price is {price_pair}")
+# print(f"{pair_ftx} price is {price_pair}")
 
 # ##################### Get position details from FTX ######################
 balance = 0
@@ -61,7 +62,7 @@ def position():
     for i in position_response['result']:
         if i["future"] == pair_ftx:
             if i["size"] == 0.0:
-                #print('You do not have an open', pair_ftx, 'position!')
+                # print('You do not have an open', pair_ftx, 'position!')
                 return None
             else:
                 p = (i['recentPnl'] / balance) * 100
@@ -69,10 +70,9 @@ def position():
                 size = i['size']
                 quote = i['cost']
                 pnl = i['recentPnl']
-                print(
-                    f"Your profit is {round(p, 4)}%, position size is {size} {pair_ftx} ~ {quote}$, unrealized p&l is {pnl}$, average price to break even is {avg}.")
+                print(f"Your profit is {round(p, 4)}%, position size is {size} {pair_ftx} ~ {quote}$, unrealized p&l is {pnl}$, average price to break even is {avg}.")
                 return [p, avg, size, quote, pnl]
-            #break
+            # break
 
 
 # ##################### 3commas bot inputs for 50% D.D #######################
@@ -138,35 +138,37 @@ SO1V40 = 30.1
 
 BO = (37 / price_pair)
 BOO = 37
-#print('\nBase currency volumes:\n' + str(round(BO)) + ' ' + pair_ftx)
+# print('\nBase currency volumes:\n' + str(round(BO)) + ' ' + pair_ftx)
 SO1 = (SO1V50 / (0.5 * (SO1H + SO1L)))
 SO1O = SO1V50
-#print(str(round(SO1, 2)) + ' ' + pair_ftx)
+# print(str(round(SO1, 2)) + ' ' + pair_ftx)
 SO2 = (SO1V50 * SCALE50) / (0.5 * (SO2H + SO2L))
 SO2O = SO1V50 * SCALE50
-#print(str(round(SO2, 2)) + ' ' + pair_ftx)
+# print(str(round(SO2, 2)) + ' ' + pair_ftx)
 SO3 = (SO1V50 * SCALE50 ** 2) / (0.5 * (SO3H + SO3L))
 SO3O = SO1V50 * SCALE50 ** 2
-#print(str(round(SO3, 2)) + ' ' + pair_ftx)
+# print(str(round(SO3, 2)) + ' ' + pair_ftx)
 SO4 = (SO1V50 * SCALE50 ** 3) / (0.5 * (SO4H + SO4L))
 SO4O = SO1V50 * SCALE50 ** 3
-#print(str(round(SO4, 2)) + ' ' + pair_ftx)
+# print(str(round(SO4, 2)) + ' ' + pair_ftx)
 SO5 = (SO1V50 * SCALE50 ** 4) / (0.5 * (SO5H + SO5L))
 SO5O = SO1V50 * SCALE50 ** 4
-#print(str(round(SO5, 2)) + ' ' + pair_ftx)
+# print(str(round(SO5, 2)) + ' ' + pair_ftx)
 
-#print(f"Total base currency size: {round((BO + SO1 + SO2 + SO3 + SO4 + SO5), 2)}")
-#print('BOO+SO1O+SO2O+SO3O+SO4O+SO5O)/price:' + str(round((BOO + SO1O + SO2O + SO3O + SO4O + SO5O) / price_pair, 2)))
+# print(f"Total base currency size: {round((BO + SO1 + SO2 + SO3 + SO4 + SO5), 2)}")
+# print('BOO+SO1O+SO2O+SO3O+SO4O+SO5O)/price:' + str(round((BOO + SO1O + SO2O + SO3O + SO4O + SO5O) / price_pair, 2)))
 # ##################### #Print $$$ volume (quote currency volume) ####################
-#print('\nQuote currency volumes:\n' + str(BOO) + "$")
-#print(str(round(SO1O, 2)) + "$")
-#print(str(round(SO2O, 2)) + "$")
-#print(str(round(SO3O, 2)) + "$")
-#print(str(round(SO4O, 2)) + "$")
-#print(str(round(SO5O, 2)) + "$")
+# print('\nQuote currency volumes:\n' + str(BOO) + "$")
+# print(str(round(SO1O, 2)) + "$")
+# print(str(round(SO2O, 2)) + "$")
+# print(str(round(SO3O, 2)) + "$")
+# print(str(round(SO4O, 2)) + "$")
+# print(str(round(SO5O, 2)) + "$")
 
 balance = BOO + SO1O + SO2O + SO3O + SO4O + SO5O
-#print('Total balance: ' + str(round(balance, 2)) + '$\n')
+
+
+# print('Total balance: ' + str(round(balance, 2)) + '$\n')
 
 
 # ##################### Grids quantities #############################
@@ -181,26 +183,26 @@ def grids_quantity(grid_volume):
 
 
 BO_qty = grids_quantity(BO)
-#print(BO_qty)
+# print(BO_qty)
 SO1_qty = grids_quantity(SO1)
-#print(SO1_qty)
+# print(SO1_qty)
 SO2_qty = grids_quantity(SO2)
-#print(SO2_qty)
+# print(SO2_qty)
 SO3_qty = grids_quantity(SO3)
-#print(SO3_qty)
+# print(SO3_qty)
 SO4_qty = grids_quantity(SO4)
-#print(SO4_qty)
+# print(SO4_qty)
 SO5_qty = grids_quantity(SO5)
-#print(SO5_qty)
+# print(SO5_qty)
 # ###################### #Print % of steps in every grid ###################
 
-#print('\n% of steps in every grid:')
-#print(round(((BOH - BOL) / (BOH * (BO_qty[1]))) * 100, 3))
-#print(round(((SO1H - SO1L) / (SO1H * (SO1_qty[1]))) * 100, 3))
-#print(round(((SO2H - SO2L) / (SO2H * (SO2_qty[1]))) * 100, 3))
-#print(round(((SO3H - SO3L) / (SO3H * (SO3_qty[1]))) * 100, 3))
-#print(round(((SO4H - SO4L) / (SO4H * (SO4_qty[1]))) * 100, 3))
-#print(round(((SO5H - SO5L) / (SO5H * (SO5_qty[1]))) * 100, 3))
+# print('\n% of steps in every grid:')
+# print(round(((BOH - BOL) / (BOH * (BO_qty[1]))) * 100, 3))
+# print(round(((SO1H - SO1L) / (SO1H * (SO1_qty[1]))) * 100, 3))
+# print(round(((SO2H - SO2L) / (SO2H * (SO2_qty[1]))) * 100, 3))
+# print(round(((SO3H - SO3L) / (SO3H * (SO3_qty[1]))) * 100, 3))
+# print(round(((SO4H - SO4L) / (SO4H * (SO4_qty[1]))) * 100, 3))
+# print(round(((SO5H - SO5L) / (SO5H * (SO5_qty[1]))) * 100, 3))
 # print("log: Printed inputs")
 
 # ###################### 3commas endpoints ###########################
@@ -218,6 +220,7 @@ enable_smart_trade_url = ''  # POST
 # edit_smart_trade_url=''
 delete_smart_trade_url = '/v2/smart_trades/{id}'  # DELETE
 id_smart_trade_url = '/v2/smart_trades'  # GET
+
 
 # ##################### 3commas requests function #############################
 
@@ -251,13 +254,15 @@ def request_3commas(request_type, endpoint_url, data_url):
 # ##################### Bot lists ##########################################
 grid_list = request_3commas('GET', id_grid_url, '&limit=1000')
 enabled_grid_list_new = []
+
+
 # for i in grid_list:
 #    if i['is_enabled'] == True and i['pair'] == pair_3commas:
 #        enabled_grid_list_new.append([i['id'], i['upper_price'], i['updated_at']])
 #        enabled_grid_list_new.sort(key=lambda x: x[1], reverse=True)
 #        # print(enabled_grid_list_new) #test
 
-#smart_trade_list = request_3commas('GET', id_smart_trade_url, '&status=active')
+# smart_trade_list = request_3commas('GET', id_smart_trade_url, '&status=active')
 
 
 # ##################### Clean up useless grid bots ##############################
@@ -273,12 +278,12 @@ def cleanup():
 # print("log: cleanup() function")
 
 # #################### close all bots ########################################
-#sys.path.append(os.getcwd())
+# sys.path.append(os.getcwd())
 
 
 def close_all():
-    #import credentials
-    #importlib.reload(credentials)
+    # import credentials
+    # importlib.reload(credentials)
     grid_list_stop = request_3commas('GET', id_grid_url, '&limit=1000')
     for i in grid_list_stop:
         if i['is_enabled'] == True and i['pair'] == pair_3commas:
@@ -395,10 +400,9 @@ def start():
 
 # #################### Take profit and enter as soon as possible ########################################
 def tp(profit_tp):
-    while position() is None:
+    if position() is None:
         print("Waiting for an open position.")
         time.sleep(10)
-        continue
 
     while not (position()[0] >= profit_tp):
         price_tp = price()
@@ -410,7 +414,7 @@ def tp(profit_tp):
         continue
     print("\nTake profit is executed. With specs as [p, avg, size, quote, pnl]:\n" + str(position()))
     start()
-    tp(0.005)
+    tp(profit_tp)
 
 
 # print("log: tp() function")

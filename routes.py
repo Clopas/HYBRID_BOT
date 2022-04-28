@@ -103,7 +103,9 @@ def signup():
                 # get_or_create_eventloop().run_until_complete(cleanup())
                 return render_template("result-cleanup.html")
             elif form.position_button.data:
-                return position()
+                p=position()
+                return f"<p>Your profit is {round(p[0], 4)}%, position size is {p[2]} EOS-PERP ~ {p[3]}$, unrealized p&l is {p[4]}$, average price to break even is {p[1]}.</p>"
+
 
     elif request.method == "GET":
         return render_template('signup.html', form=form)
