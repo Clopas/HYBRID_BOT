@@ -5,9 +5,10 @@ from flask import Flask, render_template, request
 from forms import SignupForm
 import credentials
 import functions
-from functions import close_all, cleanup, run, position
+from functions import close_all, cleanup, run, position, tp
 from celery_flask import make_celery
-import asyncio
+
+# import asyncio
 
 # sys.path.append(os.getcwd())
 
@@ -47,6 +48,16 @@ def celery_run(a, b, c, d, e):
     functions.api_key_ftx = d
     functions.api_secret_ftx = e
     return run()
+
+
+@celery.task(name='routes.celery_tp')
+def celery_tp(a, b, c, d, e):
+    functions.account_id_3commas = a
+    functions.api_key_3commas = b
+    functions.api_secret_3commas = c
+    functions.api_key_ftx = d
+    functions.api_secret_ftx = e
+    return tp(0.25)
 
 
 # def get_or_create_eventloop():
@@ -103,8 +114,13 @@ def signup():
                 # get_or_create_eventloop().run_until_complete(cleanup())
                 return render_template("result-cleanup.html")
             elif form.position_button.data:
-                p=position()
-                return f"<p>Your profit is {round(p[0], 4)}%, position size is {p[2]} EOS-PERP ~ {p[3]}$, unrealized p&l is {p[4]}$, average price to break even is {p[1]}.</p>"
+                p = position()
+                return f"<h1>Your profit is {round(p[0], 4)}%, position size is {p[2]} EOS-PERP ~ {p[3]}$, unrealized p&l is {p[4]}$, average price to break even is {p[1]}.</h1>"
+            elif form.tp_button.data:
+                celery_tp.delay(form.account_id_3commas_signup.data, form.api_key_3commas_signup.data,
+                                form.api_secret_3commas_signup.data, form.api_key_ftx_signup.data,
+                                form.api_secret_ftx_signup.data)
+                return "<h1> Position is being monitored to take profit.</h1>"
 
 
     elif request.method == "GET":

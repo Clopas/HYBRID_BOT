@@ -45,7 +45,7 @@ def price():
         if i['name'] == pair_ftx:
             pp = i['price']
             return pp
-            break
+            #break
 
 
 price_pair = price()
@@ -373,8 +373,8 @@ def start():
         print('\nbo_grid_create:\n' + str(bo_grid_create))
         time.sleep(0.1)
         so1_create = request_3commas('POST', create_grid_url, SO1_data_url)
-        enabled_grid_list_new.append([so1_create['id'], so1_create['lower_price']])
         print('\nso1_create:\n' + str(so1_create))
+        enabled_grid_list_new.append([so1_create['id'], so1_create['lower_price']])
         time.sleep(0.1)
         so2_create = request_3commas('POST', create_grid_url, SO2_data_url)
         enabled_grid_list_new.append([so2_create['id'], so2_create['lower_price']])
@@ -423,10 +423,10 @@ def tp(profit_tp):
 def run():
     if position() is not None:
         start()
-        tp(0.005)
+        tp(0.25)
     else:
         close_all()
         cleanup()
         start()
-        tp(0.005)
+        tp(0.25)
     pass
