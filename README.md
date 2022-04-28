@@ -1,4 +1,4 @@
-# DCA~GRID HYBRID 3COMMAS BOT
+# DCA~GRID HYBRID 3COMMAS+FTX BOT
 
 They can't drop the price and range at the bottom no more!! We have a hybrid bot now. :))
 
