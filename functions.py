@@ -1,3 +1,5 @@
+#import importlib
+#import sys,os
 import json
 import requests
 import hmac
@@ -5,6 +7,14 @@ import hashlib
 import time
 from requests import Request, session
 from credentials import *
+
+# credentials
+#account_id_3commas = '' #a
+#api_key_3commas = '' #b
+#api_secret_3commas = '' #c
+#api_key_ftx = '' #d
+#api_secret_ftx = '' #e
+
 # ##################### FTX request function ###############################
 
 
@@ -249,7 +259,6 @@ def request_3commas(request_type, endpoint_url, data_url):
 
 # print(request_3commas('GET', id_grid_url, ''))  # test
 # print("log: 3commas function")
-
 # ##################### Bot lists ##########################################
 grid_list = request_3commas('GET', id_grid_url, '&limit=1000')
 enabled_grid_list_new = []
@@ -380,10 +389,13 @@ def tp(profit_tp):
 
 
 # #################### stop bots ########################################
+#sys.path.append(os.getcwd())
+
+
 def close_all():
+    #import credentials
+    #importlib.reload(credentials)
     grid_list_stop = request_3commas('GET', id_grid_url, '&limit=1000')
-    print(id_grid_url)
-    print(grid_list_stop)
     for i in grid_list_stop:
         if i['is_enabled'] == True and i['pair'] == pair_3commas:
             disable_grid_stop = request_3commas('POST', disable_grid_url.format(id=i['id']), '')

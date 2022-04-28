@@ -1,36 +1,50 @@
+import importlib
+import os
+import sys
 from flask import Flask, render_template, request
 from forms import SignupForm
 import credentials
+import functions
 from functions import close_all, cleanup, main
 from celery_flask import make_celery
 import asyncio
+
+# sys.path.append(os.getcwd())
 
 flask_app = Flask(__name__)
 
 flask_app.config.update(
     CELERY_BROKER_URL='amqp://localhost//',
-    CELERY_RESULT_BACKEND='rpc://',
+    CELERY_RESULT_BACKEND='rpc://localhost//',
 
 )
 
 celery = make_celery(flask_app)
 
 
+# ##################### Celery Tasks ##############################
 @celery.task(name='routes.celery_close_all')
-def celery_close_all():
+def celery_close_all(b, c):
+    # import functions
+    # importlib.reload(functions)
+    functions.api_key_3commas = b
+    functions.api_secret_3commas = c
     return close_all()
 
 
-def get_or_create_eventloop():
-   try:
-       return asyncio.get_event_loop()
-   except RuntimeError as ex:
-       if "There is no current event loop in thread" in str(ex):
-           loop = asyncio.new_event_loop()
-           asyncio.set_event_loop(loop)
-           return asyncio.get_event_loop()
 
-# firebase
+
+
+
+# def get_or_create_eventloop():
+#    try:
+#        return asyncio.get_event_loop()
+#    except RuntimeError as ex:
+#        if "There is no current event loop in thread" in str(ex):
+#            loop = asyncio.new_event_loop()
+#            asyncio.set_event_loop(loop)
+#            return asyncio.get_event_loop()
+
 flask_app.secret_key = 'b5943ed7668424f03997a729a4d7a08adc53e59983dd6710d84bc1e4c0ac75d4'
 
 
@@ -70,14 +84,20 @@ def signup():
             credentials.api_key_ftx = form.api_key_ftx_signup.data
             credentials.api_secret_ftx = form.api_secret_ftx_signup.data
 
+            # from functions import close_all, cleanup, main
+            import functions
+            importlib.reload(functions)
+
             if form.run_button.data:
                 # get_or_create_eventloop().run_until_complete(main())
                 return render_template("result-run.html")
 
             elif form.close_all_button.data:
-                #result_close_all = celery_close_all.delay()
-                #result_close_all.wait()
-                get_or_create_eventloop().run_until_complete(close_all())
+                result_close_all = celery_close_all.delay(form.api_key_3commas_signup.data,
+                                                          form.api_secret_3commas_signup.data)
+                # result_close_all.get()
+                # get_or_create_eventloop().run_until_complete(close_all())
+                # close_all()
                 return render_template("result-closeall.html")
 
             elif form.cleanup_button.data:
