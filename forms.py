@@ -19,3 +19,4 @@ class SignupForm(FlaskForm):
     run_button = SubmitField('Run')
     close_all_button = SubmitField('Close all')
     cleanup_button = SubmitField('Clean up')
+    position_button = SubmitField('Position')

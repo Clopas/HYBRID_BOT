@@ -1,11 +1,11 @@
 import importlib
-import os
-import sys
+# import os
+# import sys
 from flask import Flask, render_template, request
 from forms import SignupForm
 import credentials
 import functions
-from functions import close_all, cleanup, main
+from functions import close_all, cleanup, run, position
 from celery_flask import make_celery
 import asyncio
 
@@ -39,6 +39,15 @@ def celery_cleanup(b, c):
     return cleanup()
 
 
+@celery.task(name='routes.celery_run')
+def celery_run(a, b, c, d, e):
+    functions.account_id_3commas = a
+    functions.api_key_3commas = b
+    functions.api_secret_3commas = c
+    functions.api_key_ftx = d
+    functions.api_secret_ftx = e
+    return run()
+
 
 # def get_or_create_eventloop():
 #    try:
@@ -50,26 +59,6 @@ def celery_cleanup(b, c):
 #            return asyncio.get_event_loop()
 
 flask_app.secret_key = 'b5943ed7668424f03997a729a4d7a08adc53e59983dd6710d84bc1e4c0ac75d4'
-
-
-# @flask_app.route("/")
-# def index():
-#     return 'hello'  # render_template("index.html")
-
-
-# @flask_app.route("/result-run/")
-# def result_run():
-#    return render_template("result-run.html")
-#
-#
-# @flask_app.route("/result-closeall/")
-# def result_close_all():
-#    return render_template("result-closeall.html")
-#
-#
-# @flask_app.route("/result-cleanup/")
-# def result_cleanup():
-#    return render_template("result-cleanup.html")
 
 
 @flask_app.route("/", methods=["GET", "POST"])
@@ -93,23 +82,28 @@ def signup():
             importlib.reload(functions)
 
             if form.run_button.data:
+                celery_run.delay(form.account_id_3commas_signup.data, form.api_key_3commas_signup.data,
+                                 form.api_secret_3commas_signup.data, form.api_key_ftx_signup.data,
+                                 form.api_secret_ftx_signup.data)
                 # get_or_create_eventloop().run_until_complete(main())
                 return render_template("result-run.html")
 
             elif form.close_all_button.data:
-                result_close_all = celery_close_all.delay(form.api_key_3commas_signup.data,
-                                                          form.api_secret_3commas_signup.data)
+                celery_close_all.delay(form.api_key_3commas_signup.data,
+                                       form.api_secret_3commas_signup.data)
                 # result_close_all.get()
                 # get_or_create_eventloop().run_until_complete(close_all())
                 # close_all()
                 return render_template("result-closeall.html")
 
             elif form.cleanup_button.data:
-                result_cleanup = celery_cleanup.delay(form.api_key_3commas_signup.data,
-                                                          form.api_secret_3commas_signup.data)
-                #result_cleanup.get()
+                celery_cleanup.delay(form.api_key_3commas_signup.data,
+                                     form.api_secret_3commas_signup.data)
+                # result_cleanup.get()
                 # get_or_create_eventloop().run_until_complete(cleanup())
                 return render_template("result-cleanup.html")
+            elif form.position_button.data:
+                return position()
 
     elif request.method == "GET":
         return render_template('signup.html', form=form)

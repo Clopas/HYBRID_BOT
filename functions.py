@@ -61,7 +61,7 @@ def position():
     for i in position_response['result']:
         if i["future"] == pair_ftx:
             if i["size"] == 0.0:
-                print('You do not have an open', pair_ftx, 'position!')
+                #print('You do not have an open', pair_ftx, 'position!')
                 return None
             else:
                 p = (i['recentPnl'] / balance) * 100
@@ -72,7 +72,7 @@ def position():
                 print(
                     f"Your profit is {round(p, 4)}%, position size is {size} {pair_ftx} ~ {quote}$, unrealized p&l is {pnl}$, average price to break even is {avg}.")
                 return [p, avg, size, quote, pnl]
-            break
+            #break
 
 
 # ##################### 3commas bot inputs for 50% D.D #######################
@@ -218,17 +218,6 @@ enable_smart_trade_url = ''  # POST
 # edit_smart_trade_url=''
 delete_smart_trade_url = '/v2/smart_trades/{id}'  # DELETE
 id_smart_trade_url = '/v2/smart_trades'  # GET
-# ##################### 3commas data_urls #########################
-
-BO_grid_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={BOH}&lower_price={BOL}&quantity_per_grid={BO_qty[0]}&grids_quantity={BO_qty[1]}&leverage_type=cross&is_enabled=true"
-BO_smart_trade_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&instant=false&position%5Btype%5D=buy&position%5Border_type%5D=market&stop_loss%5Benabled%5D=false&take_profit%5Benabled%5D=false&position%5Bunits%5D%5Bvalue%5D={0.5 * BO}"
-
-SO1_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO1H}&lower_price={SO1L}&quantity_per_grid={SO1_qty[0]}&grids_quantity={SO1_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
-SO2_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO2H}&lower_price={SO2L}&quantity_per_grid={SO2_qty[0]}&grids_quantity={SO2_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
-SO3_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO3H}&lower_price={SO3L}&quantity_per_grid={SO3_qty[0]}&grids_quantity={SO3_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
-SO4_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO4H}&lower_price={SO4L}&quantity_per_grid={SO4_qty[0]}&grids_quantity={SO4_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
-SO5_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO5H}&lower_price={SO5L}&quantity_per_grid={SO5_qty[0]}&grids_quantity={SO5_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
-
 
 # ##################### 3commas requests function #############################
 
@@ -268,7 +257,7 @@ enabled_grid_list_new = []
 #        enabled_grid_list_new.sort(key=lambda x: x[1], reverse=True)
 #        # print(enabled_grid_list_new) #test
 
-smart_trade_list = request_3commas('GET', id_smart_trade_url, '&status=active')
+#smart_trade_list = request_3commas('GET', id_smart_trade_url, '&status=active')
 
 
 # ##################### Clean up useless grid bots ##############################
@@ -283,113 +272,7 @@ def cleanup():
 
 # print("log: cleanup() function")
 
-
-# ################### start the bots ############################################
-def start():
-    if len(enabled_grid_list_new) == 6:
-        print('List before editing: ' + str(enabled_grid_list_new))
-
-        for i in smart_trade_list:
-            if i['pair'] == pair_3commas:
-                smart_trade_close = request_3commas('POST', close_smart_trade_url.format(id=i['id']), '')
-                print("\nA smart trade is closed:\n" + str(smart_trade_close))
-        bo_smart_trade_create = request_3commas('POST', create_smart_trade_url, BO_smart_trade_data_url)
-        print('\nbo_smart_trade_created:\n' + str(bo_smart_trade_create))
-
-        bo_grid_edited = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[0][0]),
-                                         BO_grid_data_url)
-        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[0][0]), '')
-        print('\nbo_grid_edited:\n' + str(bo_grid_edited))
-
-        so1_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[1][0]),
-                                   SO1_data_url)
-        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[1][0]), '')
-        print('\nso1_edited:\n' + str(so1_edit))
-
-        so2_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[2][0]),
-                                   SO2_data_url)
-        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[2][0]), '')
-        print('\nso2_edited:\n' + str(so2_edit))
-
-        so3_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[3][0]),
-                                   SO3_data_url)
-        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[3][0]), '')
-        print('\nso3_edited:\n' + str(so3_edit))
-
-        so4_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[4][0]),
-                                   SO4_data_url)
-        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[4][0]), '')
-        print('\nso4_edited:\n' + str(so4_edit))
-
-        so5_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[5][0]),
-                                   SO5_data_url)
-        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[5][0]), '')
-        print('\nso5_edited:\n' + str(so5_edit))
-
-        print("\nThe previously enabled bots are edited.")
-
-    else:
-        if len(enabled_grid_list_new) > 0:
-            print("I couldn't find 6 grids to edit them. So I am creating new ones.")
-        enabled_grid_list_new.clear()
-
-        bo_smart_trade_create = request_3commas('POST', create_smart_trade_url, BO_smart_trade_data_url)
-        print('\nbo_smart_trade_create:\n' + str(bo_smart_trade_create))
-
-        bo_grid_create = request_3commas('POST', create_grid_url, BO_grid_data_url)
-        enabled_grid_list_new.append([bo_grid_create['id'], bo_grid_create['lower_price']])
-        print('\nbo_grid_create:\n' + str(bo_grid_create))
-
-        so1_create = request_3commas('POST', create_grid_url, SO1_data_url)
-        enabled_grid_list_new.append([so1_create['id'], so1_create['lower_price']])
-        print('\nso1_create:\n' + str(so1_create))
-
-        so2_create = request_3commas('POST', create_grid_url, SO2_data_url)
-        enabled_grid_list_new.append([so2_create['id'], so2_create['lower_price']])
-        print('\nso2_create:\n' + str(so2_create))
-
-        so3_create = request_3commas('POST', create_grid_url, SO3_data_url)
-        enabled_grid_list_new.append([so3_create['id'], so3_create['lower_price']])
-        print('\nso3_create:\n' + str(so3_create))
-
-        so4_create = request_3commas('POST', create_grid_url, SO4_data_url)
-        enabled_grid_list_new.append([so4_create['id'], so4_create['lower_price']])
-        print('\nso4_create:\n' + str(so4_create))
-
-        so5_create = request_3commas('POST', create_grid_url, SO5_data_url)
-        enabled_grid_list_new.append([so5_create['id'], so5_create['lower_price']])
-        print('\nso5_create:\n' + str(so5_create))
-
-        print('\nNew bots are created.')
-
-
-# print("log: start() function")
-
-
-# #################### Take profit and enter as soon as possible ########################################
-def tp(profit_tp):
-    while position() is None:
-        time.sleep(10)
-        print("Waiting for an open position.")
-        continue
-
-    while not (position()[0] >= profit_tp):
-        price_tp = price()
-        for i in enabled_grid_list_new[1:]:
-            if price_tp <= float(i[1]):
-                request_3commas('POST', disable_grid_url.format(id=i[0]), '')
-                print(f"The higher grid {i} is disabled.")
-        time.sleep(10)
-        continue
-    print("\nTake profit is executed. With specs as [p, avg, size, quote, pnl]:\n" + str(position()))
-    start()
-    tp()
-
-
-# print("log: tp() function")
-
-
-# #################### stop bots ########################################
+# #################### close all bots ########################################
 #sys.path.append(os.getcwd())
 
 
@@ -410,10 +293,136 @@ def close_all():
 
 
 # print("log: close_all() function")
+# ################### start the bots ############################################
+def start():
+    # ########## 3commas data_urls ##########
+
+    BO_grid_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={BOH}&lower_price={BOL}&quantity_per_grid={BO_qty[0]}&grids_quantity={BO_qty[1]}&leverage_type=cross&is_enabled=true"
+    BO_smart_trade_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&instant=false&position%5Btype%5D=buy&position%5Border_type%5D=market&stop_loss%5Benabled%5D=false&take_profit%5Benabled%5D=false&position%5Bunits%5D%5Bvalue%5D={0.5 * BO}"
+
+    SO1_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO1H}&lower_price={SO1L}&quantity_per_grid={SO1_qty[0]}&grids_quantity={SO1_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
+    SO2_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO2H}&lower_price={SO2L}&quantity_per_grid={SO2_qty[0]}&grids_quantity={SO2_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
+    SO3_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO3H}&lower_price={SO3L}&quantity_per_grid={SO3_qty[0]}&grids_quantity={SO3_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
+    SO4_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO4H}&lower_price={SO4L}&quantity_per_grid={SO4_qty[0]}&grids_quantity={SO4_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
+    SO5_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO5H}&lower_price={SO5L}&quantity_per_grid={SO5_qty[0]}&grids_quantity={SO5_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
+
+    if len(enabled_grid_list_new) == 6:
+        smart_trade_list = request_3commas('GET', id_smart_trade_url, '&status=active')
+        print('List before editing: ' + str(enabled_grid_list_new))
+
+        for i in smart_trade_list:
+            if i['pair'] == pair_3commas:
+                smart_trade_close = request_3commas('POST', close_smart_trade_url.format(id=i['id']), '')
+                print("\nA smart trade is closed:\n" + str(smart_trade_close))
+        bo_smart_trade_create = request_3commas('POST', create_smart_trade_url, BO_smart_trade_data_url)
+        print('\nbo_smart_trade_created:\n' + str(bo_smart_trade_create))
+        time.sleep(0.1)
+        bo_grid_edited = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[0][0]),
+                                         BO_grid_data_url)
+        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[0][0]), '')
+        print('\nbo_grid_edited:\n' + str(bo_grid_edited))
+        time.sleep(0.1)
+        so1_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[1][0]),
+                                   SO1_data_url)
+        time.sleep(0.1)
+        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[1][0]), '')
+        print('\nso1_edited:\n' + str(so1_edit))
+        time.sleep(0.1)
+        so2_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[2][0]),
+                                   SO2_data_url)
+        time.sleep(0.1)
+        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[2][0]), '')
+        print('\nso2_edited:\n' + str(so2_edit))
+        time.sleep(0.1)
+        so3_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[3][0]),
+                                   SO3_data_url)
+        time.sleep(0.1)
+        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[3][0]), '')
+        print('\nso3_edited:\n' + str(so3_edit))
+        time.sleep(0.1)
+        so4_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[4][0]),
+                                   SO4_data_url)
+        time.sleep(0.1)
+        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[4][0]), '')
+        print('\nso4_edited:\n' + str(so4_edit))
+        time.sleep(0.1)
+        so5_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[5][0]),
+                                   SO5_data_url)
+        time.sleep(0.1)
+        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[5][0]), '')
+        print('\nso5_edited:\n' + str(so5_edit))
+
+        print("\nThe previously enabled bots are edited.")
+
+    else:
+        if len(enabled_grid_list_new) >= 0:
+            print("I couldn't find 6 grids to edit them. So I am creating new ones.")
+            close_all()
+        enabled_grid_list_new.clear()
+
+        bo_smart_trade_create = request_3commas('POST', create_smart_trade_url, BO_smart_trade_data_url)
+        print('\nbo_smart_trade_create:\n' + str(bo_smart_trade_create))
+        time.sleep(0.1)
+        bo_grid_create = request_3commas('POST', create_grid_url, BO_grid_data_url)
+        enabled_grid_list_new.append([bo_grid_create['id'], bo_grid_create['lower_price']])
+        print('\nbo_grid_create:\n' + str(bo_grid_create))
+        time.sleep(0.1)
+        so1_create = request_3commas('POST', create_grid_url, SO1_data_url)
+        enabled_grid_list_new.append([so1_create['id'], so1_create['lower_price']])
+        print('\nso1_create:\n' + str(so1_create))
+        time.sleep(0.1)
+        so2_create = request_3commas('POST', create_grid_url, SO2_data_url)
+        enabled_grid_list_new.append([so2_create['id'], so2_create['lower_price']])
+        print('\nso2_create:\n' + str(so2_create))
+        time.sleep(0.1)
+        so3_create = request_3commas('POST', create_grid_url, SO3_data_url)
+        enabled_grid_list_new.append([so3_create['id'], so3_create['lower_price']])
+        print('\nso3_create:\n' + str(so3_create))
+        time.sleep(0.1)
+        so4_create = request_3commas('POST', create_grid_url, SO4_data_url)
+        enabled_grid_list_new.append([so4_create['id'], so4_create['lower_price']])
+        print('\nso4_create:\n' + str(so4_create))
+        time.sleep(0.1)
+        so5_create = request_3commas('POST', create_grid_url, SO5_data_url)
+        enabled_grid_list_new.append([so5_create['id'], so5_create['lower_price']])
+        print('\nso5_create:\n' + str(so5_create))
+
+        print('\nNew bots are created.')
+
+
+# print("log: start() function")
+
+
+# #################### Take profit and enter as soon as possible ########################################
+def tp(profit_tp):
+    while position() is None:
+        print("Waiting for an open position.")
+        time.sleep(10)
+        continue
+
+    while not (position()[0] >= profit_tp):
+        price_tp = price()
+        for i in enabled_grid_list_new[1:]:
+            if price_tp <= float(i[1]):
+                request_3commas('POST', disable_grid_url.format(id=i[0]), '')
+                print(f"The higher grid {i} is disabled.")
+        time.sleep(10)
+        continue
+    print("\nTake profit is executed. With specs as [p, avg, size, quote, pnl]:\n" + str(position()))
+    start()
+    tp(0.005)
+
+
+# print("log: tp() function")
+
 # #################### main function ########################################
 def run():
-    close_all()
-    cleanup()
-    start()
-    # tp(0.25)
+    if position() is not None:
+        start()
+        tp(0.005)
+    else:
+        close_all()
+        cleanup()
+        start()
+        tp(0.005)
     pass
