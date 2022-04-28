@@ -273,7 +273,8 @@ smart_trade_list = request_3commas('GET', id_smart_trade_url, '&status=active')
 
 # ##################### Clean up useless grid bots ##############################
 def cleanup():
-    for i in grid_list:
+    grid_list_cleanup = request_3commas('GET', id_grid_url, '&limit=1000')
+    for i in grid_list_cleanup:
         if (i['is_enabled'] == False) and i['total_profits_count'] == '0':
             request_3commas('DELETE', delete_grid_url.format(id=i['id']), '')
             print('\n' + str(i['id']) + ' ' + str(i['pair']) + ' is deleted.')
@@ -283,8 +284,8 @@ def cleanup():
 # print("log: cleanup() function")
 
 
-# ################### Run the bots ############################################
-def run():
+# ################### start the bots ############################################
+def start():
     if len(enabled_grid_list_new) == 6:
         print('List before editing: ' + str(enabled_grid_list_new))
 
@@ -362,7 +363,7 @@ def run():
         print('\nNew bots are created.')
 
 
-# print("log: run() function")
+# print("log: start() function")
 
 
 # #################### Take profit and enter as soon as possible ########################################
@@ -381,7 +382,7 @@ def tp(profit_tp):
         time.sleep(10)
         continue
     print("\nTake profit is executed. With specs as [p, avg, size, quote, pnl]:\n" + str(position()))
-    run()
+    start()
     tp()
 
 
@@ -410,9 +411,9 @@ def close_all():
 
 # print("log: close_all() function")
 # #################### main function ########################################
-def main():
+def run():
     close_all()
     cleanup()
-    run()
+    start()
     # tp(0.25)
     pass

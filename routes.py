@@ -32,7 +32,11 @@ def celery_close_all(b, c):
     return close_all()
 
 
-
+@celery.task(name='routes.celery_cleanup')
+def celery_cleanup(b, c):
+    functions.api_key_3commas = b
+    functions.api_secret_3commas = c
+    return cleanup()
 
 
 
@@ -101,6 +105,9 @@ def signup():
                 return render_template("result-closeall.html")
 
             elif form.cleanup_button.data:
+                result_cleanup = celery_cleanup.delay(form.api_key_3commas_signup.data,
+                                                          form.api_secret_3commas_signup.data)
+                #result_cleanup.get()
                 # get_or_create_eventloop().run_until_complete(cleanup())
                 return render_template("result-cleanup.html")
 
