@@ -15,7 +15,7 @@ The project is still in heavy testing. So use at your own risk.
 How to use the webapp:
 
 * fork the project
-* It's a flask application. If not familiar how to run it, just google it or ask me.
+* It's a flask+celery application. If not familiar how to run it, just google it or ask me (@blockchainophil).
 * Open the webapp and enter your API information.
 * If you want to run and test the bot, just press run.
 * If you want to clean up your unused and empty 3commas grid bots (for any purpose), click on clean up.
