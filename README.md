@@ -11,6 +11,7 @@ It is mainly an open source project which combines the best of the both worlds. 
 
 The project is still in heavy testing. So use at your own risk.
 
+If you like this project, please cosider contributing to it.
 
 How to use the webapp:
 
