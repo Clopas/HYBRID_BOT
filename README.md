@@ -29,6 +29,6 @@ Notes:
 * For security reasons it doesn't yet save your credentials until the app is fully bug tested.
 
 In case you want to buy me a cup of coffee or anything:
-(Ethereum, polygon, BSC is ok ;)
+(Ethereum, Polygon and BSC networks are ok ;))
 
 0x5931D3609b361e6d2c7729Da7Edb8797eF25458e
