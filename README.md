@@ -27,7 +27,7 @@ Notes:
 * You need 3commas and FTX accounts to run this bot.
 * It opens a position on EOS-PERP by default.
 * Beast mode should be enabled in 3commas settings.
-* Code is compatible with heroku out of the box. You just need to add "cloudamqp" heroku extention and configure it. more on this is in the link below: https://devcenter.heroku.com/articles/cloudamqp#installing-the-add-on
+* Code is compatible with heroku server out of the box. You just need to add "cloudamqp" heroku extention and configure it. more on this is in the link below: https://devcenter.heroku.com/articles/cloudamqp#installing-the-add-on
 * For security reasons it doesn't yet save your credentials until the app is fully bug tested.
 
 In case you want to buy me a cup of coffee or anything, here's my wallet address:
