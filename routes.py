@@ -15,7 +15,7 @@ from celery_flask import make_celery
 flask_app = Flask(__name__)
 
 flask_app.config.update(
-    CELERY_BROKER_URL='amqp://localhost//',
+    CELERY_BROKER_URL='amqps://ffidttdm:SwicfP7xDfiqOqvvCrSwMzqJBeID62iR@shark.rmq.cloudamqp.com/ffidttdm',
     CELERY_RESULT_BACKEND='rpc://localhost//',
 
 )
