@@ -16,9 +16,6 @@ from credentials import *
 # api_key_ftx = '' #d
 # api_secret_ftx = '' #e
 
-# ##################### FTX request function ###############################
-
-
 def request_ftx(request_type, ftx_endpoint):
     ts = int(time.time() * 1000)
     position_request = Request(request_type, f"https://ftx.com/api{ftx_endpoint}")
@@ -59,10 +56,11 @@ leverage = 2
 def position():
     ftx_position_endpoint = '/positions?showAvgPrice=True'
     position_response = request_ftx('GET', ftx_position_endpoint)
+
     for i in position_response['result']:
         if i["future"] == pair_ftx:
             if i["size"] == 0.0:
-                # print('You do not have an open', pair_ftx, 'position!')
+                print('You do not have an open', pair_ftx, 'position!')
                 return None
             else:
                 p = (i['recentPnl'] / balance) * 100
@@ -400,7 +398,7 @@ def start():
 
 # #################### Take profit and enter as soon as possible ########################################
 def tp(profit_tp):
-    if position() is None:
+    while position() is None:
         print("Waiting for an open position.")
         time.sleep(10)
 
