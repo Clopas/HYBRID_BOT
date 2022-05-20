@@ -16,6 +16,7 @@ from credentials import *
 # api_key_ftx = '' #d
 # api_secret_ftx = '' #e
 
+# ##################### FTX request function ###############################
 def request_ftx(request_type, ftx_endpoint):
     ts = int(time.time() * 1000)
     position_request = Request(request_type, f"https://ftx.com/api{ftx_endpoint}")
