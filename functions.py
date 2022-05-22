@@ -254,7 +254,6 @@ def request_3commas(request_type, endpoint_url, data_url):
 grid_list = request_3commas('GET', id_grid_url, '&limit=1000')
 enabled_grid_list_new = []
 
-
 # for i in grid_list:
 #    if i['is_enabled'] == True and i['pair'] == pair_3commas:
 #        enabled_grid_list_new.append([i['id'], i['upper_price'], i['updated_at']])
