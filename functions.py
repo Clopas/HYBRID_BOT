@@ -213,6 +213,7 @@ delete_dca_url = '/ver1/bots/{bot_id}/delete'  # POST
 edit_dca_url = '/ver1/bots/{bot_id}/update'  # PATCH
 asap_dca_url = '/ver1/bots/{bot_id}/start_new_deal'  # POST
 dca_list_url = '/ver1/bots'  # GET
+panic_sell_dca_url = '/ver1/bots/{bot_id}/panic_sell_all_deals'  # POST
 
 create_grid_url = '/ver1/grid_bots/manual'  # POST
 disable_grid_url = '/ver1/grid_bots/{id}/disable'  # POST
@@ -284,13 +285,19 @@ def cleanup():
 
 # print("log: cleanup() function")
 
+# ##################### Get DCA bot id ##############################
+
+def dca_id():
+    for i in request_3commas('GET', dca_list_url, ''):
+        if i['pairs'] == pair_3commas:
+            return i['id']
+
+
 # #################### close all bots ########################################
 # sys.path.append(os.getcwd())
 
 
 def close_all():
-    # import credentials
-    # importlib.reload(credentials)
     grid_list_stop = request_3commas('GET', id_grid_url, '&limit=1000')
     for i in grid_list_stop:
         if i['is_enabled'] == True and i['pair'] == pair_3commas:
@@ -301,15 +308,16 @@ def close_all():
         if i['pair'] == pair_3commas:
             smart_trade_close_stop = request_3commas('POST', close_smart_trade_url.format(id=i['id']), '')
             print("\nA smart trade is closed:\n" + str(smart_trade_close_stop))
+
+    # panic sell dca
+    panic_sell_close_all=request_3commas('POST', panic_sell_dca_url.format(bot_id=dca_id()), '')
+    print('\nDCA deals sold:\n' + str(panic_sell_close_all))
+
     print("Close all done.")
 
 
 # print("log: close_all() function")
 # ################### start the bots ############################################
-def dca_id():
-    for i in request_3commas('GET', dca_list_url, ''):
-        if i['pairs'] == pair_3commas:
-            return i['id']
 
 
 def start():
@@ -364,7 +372,7 @@ def start():
             close_all()
         enabled_grid_list_new.clear()
 
-        dca_create=request_3commas('POST', create_dca_url, dca_data_url)
+        dca_create = request_3commas('POST', create_dca_url, dca_data_url)
         print('\nDCA created:\n' + str(dca_create))
         time.sleep(0.1)
 
