@@ -333,14 +333,18 @@ def start():
 
     if len(enabled_grid_list_new) == 4:
         dca_id_start = dca_id()
-        panic_sell_start = request_3commas('POST', panic_sell_dca_url.format(bot_id=dca_id_start), '')
-        print('\nDCA deals sold:\n' + str(panic_sell_start))
-        dca_edit = request_3commas('PATCH', edit_dca_url.format(bot_id=dca_id_start), dca_data_url)
-        print('\nDCA edited:\n' + str(dca_edit))
-        time.sleep(0.1)
+        # dca_edit = request_3commas('PATCH', edit_dca_url.format(bot_id=dca_id_start), dca_data_url)
+        # print('\nDCA edited:\n' + str(dca_edit))
+        # time.sleep(0.1)
+
         dca_enable = request_3commas('POST', enable_dca_url.format(bot_id=dca_id_start), '')
         print('\nDCA enabled:\n' + str(dca_enable))
         time.sleep(0.1)
+
+        panic_sell_start = request_3commas('POST', panic_sell_dca_url.format(bot_id=dca_id_start), '')
+        print('\nDCA deal panic sold:\n' + str(panic_sell_start))
+        time.sleep(0.1)
+
 
         so2_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[0][0]),
                                    SO2_data_url)
