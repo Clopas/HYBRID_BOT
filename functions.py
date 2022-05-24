@@ -8,7 +8,6 @@ import time
 from requests import Request, session
 from credentials import *
 
-
 # credentials
 # account_id_3commas = '' #a
 # api_key_3commas = '' #b
@@ -16,12 +15,13 @@ from credentials import *
 # api_key_ftx = '' #d
 # api_secret_ftx = '' #e
 
-# ##################### FTX request function ###############################
-def request_ftx(request_type, ftx_endpoint):
+def request_ftx(request_type, ftx_endpoint='', request_json={}):
     ts = int(time.time() * 1000)
-    position_request = Request(request_type, f"https://ftx.com/api{ftx_endpoint}")
+    position_request = Request(request_type, f"https://ftx.com/api{ftx_endpoint}", json=request_json)
     prepared = position_request.prepare()
     signature_payload = f'{ts}{prepared.method}{prepared.path_url}'.encode()
+    if prepared.body:
+        signature_payload += prepared.body
     signature_request_ftx = hmac.new(api_secret_ftx.encode(), signature_payload, 'sha256').hexdigest()
     prepared.headers['FTX-KEY'] = api_key_ftx
     prepared.headers['FTX-SIGN'] = signature_request_ftx
@@ -57,7 +57,7 @@ leverage = 2
 def position():
     ftx_position_endpoint = '/positions?showAvgPrice=True'
     position_response = request_ftx('GET', ftx_position_endpoint)
-
+    print(position_response)
     for i in position_response['result']:
         if i["future"] == pair_ftx:
             if i["size"] == 0.0:
@@ -295,6 +295,22 @@ def dca_id():
 
 # #################### close all bots ########################################
 # sys.path.append(os.getcwd())
+def close_ftx():
+    null = None
+    true=True
+    size_close_ftx = position()[2]
+    print(size_close_ftx)
+    json_close_ftx = {
+    "market": pair_ftx,
+    "side": "sell",
+    "price": null,
+    "type": "market",
+    "size": size_close_ftx,
+    "reduceOnly": true,
+    "ioc": true,
+    }
+    a = request_ftx('POST', '/orders', json_close_ftx)
+    print(a)
 
 
 def close_all():
@@ -325,7 +341,7 @@ def close_all():
 
 def start():
     # ########## 3commas data_urls ##########
-    dca_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&base_order_volume=50&take_profit='5'&safety_order_volume=4.32&martingale_volume_coefficient=1&martingale_step_coefficient=1&max_safety_orders=20&active_safety_orders_count=20&safety_order_step_percentage=0.675&take_profit_type=total&leverage_type=cross" + "&strategy_list=[{'strategy:nonstop'}]"
+    dca_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&base_order_volume=50&take_profit='2.5'&safety_order_volume=4.32&martingale_volume_coefficient=1&martingale_step_coefficient=1&max_safety_orders=20&active_safety_orders_count=20&safety_order_step_percentage=0.675&take_profit_type=total&leverage_type=cross" + "&strategy_list=[{'strategy:nonstop'}]"
     SO2_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO2H}&lower_price={SO2L}&quantity_per_grid={SO2_qty[0]}&grids_quantity={SO2_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
     SO3_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO3H}&lower_price={SO3L}&quantity_per_grid={SO3_qty[0]}&grids_quantity={SO3_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
     SO4_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO4H}&lower_price={SO4L}&quantity_per_grid={SO4_qty[0]}&grids_quantity={SO4_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
@@ -344,7 +360,6 @@ def start():
         panic_sell_start = request_3commas('POST', panic_sell_dca_url.format(bot_id=dca_id_start), '')
         print('\nDCA deal panic sold:\n' + str(panic_sell_start))
         time.sleep(0.1)
-
 
         so2_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[0][0]),
                                    SO2_data_url)
