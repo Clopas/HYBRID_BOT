@@ -8,6 +8,7 @@ import time
 from requests import Request, session
 from credentials import *
 
+
 # credentials
 # account_id_3commas = '' #a
 # api_key_3commas = '' #b
@@ -15,7 +16,9 @@ from credentials import *
 # api_key_ftx = '' #d
 # api_secret_ftx = '' #e
 
-def request_ftx(request_type, ftx_endpoint='', request_json={}):
+def request_ftx(request_type, ftx_endpoint='', request_json=None):
+    if request_json is None:
+        request_json = {}
     ts = int(time.time() * 1000)
     position_request = Request(request_type, f"https://ftx.com/api{ftx_endpoint}", json=request_json)
     prepared = position_request.prepare()
@@ -50,7 +53,7 @@ price_pair = price()
 # print(f"{pair_ftx} price is {price_pair}")
 
 # ##################### Get position details from FTX ######################
-balance = 0
+# balance = 0
 leverage = 2
 
 
@@ -79,7 +82,7 @@ def position():
 
 pair_3commas = f"USD_{pair_ftx}"
 
-BOH = price_pair + (price_pair * (0.04))
+BOH = price_pair + (price_pair * 0.04)
 BOL = price_pair + (price_pair * (-0.05))
 
 SO1H = price_pair + (price_pair * (-0.05))
@@ -232,7 +235,7 @@ id_smart_trade_url = '/v2/smart_trades'  # GET
 
 # ##################### 3commas requests function #############################
 
-def request_3commas(request_type, endpoint_url, data_url):
+def request_3commas(request_type, endpoint_url, data_url=''):
     base_url = 'https://api.3commas.io/public/api'
     key_url = f'?api_key={api_key_3commas}&secret={api_secret_3commas}'
 
@@ -257,7 +260,7 @@ def request_3commas(request_type, endpoint_url, data_url):
     return json.loads(send_request_3commas.content)
 
 
-# print(request_3commas('GET', id_grid_url, ''))  # test
+# print(request_3commas('GET', id_grid_url))  # test
 # print("log: 3commas function")
 # ##################### Bot lists ##########################################
 grid_list = request_3commas('GET', id_grid_url, '&limit=1000')
@@ -278,7 +281,7 @@ def cleanup():
     grid_list_cleanup = request_3commas('GET', id_grid_url, '&limit=1000')
     for i in grid_list_cleanup:
         if (i['is_enabled'] == False) and i['total_profits_count'] == '0':
-            request_3commas('DELETE', delete_grid_url.format(id=i['id']), '')
+            request_3commas('DELETE', delete_grid_url.format(id=i['id']))
             print('\n' + str(i['id']) + ' ' + str(i['pair']) + ' is deleted.')
     print('Bots clean up is completed!')
 
@@ -288,26 +291,25 @@ def cleanup():
 # ##################### Get DCA bot id ##############################
 
 def dca_id():
-    for i in request_3commas('GET', dca_list_url, ''):
+    for i in request_3commas('GET', dca_list_url):
         if i['pairs'] == pair_3commas:
             return i['id']
 
 
 # #################### close all bots ########################################
-# sys.path.append(os.getcwd())
 def close_ftx():
     null = None
-    true=True
+    true = True
     size_close_ftx = position()[2]
     print(size_close_ftx)
     json_close_ftx = {
-    "market": pair_ftx,
-    "side": "sell",
-    "price": null,
-    "type": "market",
-    "size": size_close_ftx,
-    "reduceOnly": true,
-    "ioc": true,
+        "market": pair_ftx,
+        "side": "sell",
+        "price": null,
+        "type": "market",
+        "size": size_close_ftx,
+        "reduceOnly": true,
+        "ioc": true,
     }
     a = request_ftx('POST', '/orders', json_close_ftx)
     print(a)
@@ -317,17 +319,17 @@ def close_all():
     grid_list_stop = request_3commas('GET', id_grid_url, '&limit=1000')
     for i in grid_list_stop:
         if i['is_enabled'] == True and i['pair'] == pair_3commas:
-            disable_grid_stop = request_3commas('POST', disable_grid_url.format(id=i['id']), '')
+            disable_grid_stop = request_3commas('POST', disable_grid_url.format(id=i['id']))
             print(f"\nGrid {i['id']} is disabled.\n" + str(disable_grid_stop))
 
     # legacy code: close smart trade
     #   for i in request_3commas('GET', id_smart_trade_url, '&status=active'):
     #       if i['pair'] == pair_3commas:
-    #           smart_trade_close_stop = request_3commas('POST', close_smart_trade_url.format(id=i['id']), '')
+    #           smart_trade_close_stop = request_3commas('POST', close_smart_trade_url.format(id=i['id']))
     #           print("\nA smart trade is closed:\n" + str(smart_trade_close_stop))
 
     # panic sell dca
-    panic_sell_close_all = request_3commas('POST', panic_sell_dca_url.format(bot_id=dca_id()), '')
+    panic_sell_close_all = request_3commas('POST', panic_sell_dca_url.format(bot_id=dca_id()))
     print('\nDCA deals sold:\n' + str(panic_sell_close_all))
 
     # ToDo: close market using ftx
@@ -353,39 +355,39 @@ def start():
         # print('\nDCA edited:\n' + str(dca_edit))
         # time.sleep(0.1)
 
-        dca_enable = request_3commas('POST', enable_dca_url.format(bot_id=dca_id_start), '')
+        dca_enable = request_3commas('POST', enable_dca_url.format(bot_id=dca_id_start))
         print('\nDCA enabled:\n' + str(dca_enable))
         time.sleep(0.1)
 
-        panic_sell_start = request_3commas('POST', panic_sell_dca_url.format(bot_id=dca_id_start), '')
+        panic_sell_start = request_3commas('POST', panic_sell_dca_url.format(bot_id=dca_id_start))
         print('\nDCA deal panic sold:\n' + str(panic_sell_start))
         time.sleep(0.1)
 
         so2_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[0][0]),
                                    SO2_data_url)
         time.sleep(0.1)
-        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[0][0]), '')
+        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[0][0]))
         print('\nso2_edited:\n' + str(so2_edit))
         time.sleep(0.1)
 
         so3_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[1][0]),
                                    SO3_data_url)
         time.sleep(0.1)
-        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[1][0]), '')
+        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[1][0]))
         print('\nso3_edited:\n' + str(so3_edit))
         time.sleep(0.1)
 
         so4_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[2][0]),
                                    SO4_data_url)
         time.sleep(0.1)
-        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[2][0]), '')
+        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[2][0]))
         print('\nso4_edited:\n' + str(so4_edit))
         time.sleep(0.1)
 
         so5_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[3][0]),
                                    SO5_data_url)
         time.sleep(0.1)
-        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[3][0]), '')
+        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[3][0]))
         print('\nso5_edited:\n' + str(so5_edit))
 
         print("\nThe previously enabled bots are edited.")
@@ -435,7 +437,7 @@ def tp(profit_tp):
         price_tp = price()
         for i in enabled_grid_list_new[1:]:
             if price_tp <= float(i[1]):
-                request_3commas('POST', disable_grid_url.format(id=i[0]), '')
+                request_3commas('POST', disable_grid_url.format(id=i[0]))
                 print(f"The higher grid {i} is disabled.")
         time.sleep(10)
         continue
