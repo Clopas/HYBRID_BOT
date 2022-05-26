@@ -322,17 +322,13 @@ def close_all():
             disable_grid_stop = request_3commas('POST', disable_grid_url.format(id=i['id']))
             print(f"\nGrid {i['id']} is disabled.\n" + str(disable_grid_stop))
 
-    # legacy code: close smart trade
-    #   for i in request_3commas('GET', id_smart_trade_url, '&status=active'):
-    #       if i['pair'] == pair_3commas:
-    #           smart_trade_close_stop = request_3commas('POST', close_smart_trade_url.format(id=i['id']))
-    #           print("\nA smart trade is closed:\n" + str(smart_trade_close_stop))
 
     # panic sell dca
-    panic_sell_close_all = request_3commas('POST', panic_sell_dca_url.format(bot_id=dca_id()))
+    dca_id_close_all = dca_id()
+    request_3commas('POST', disable_dca_url.format(id=dca_id_close_all))
+    panic_sell_close_all = request_3commas('POST', panic_sell_dca_url.format(bot_id=dca_id_close_all))
     print('\nDCA deals sold:\n' + str(panic_sell_close_all))
-
-    # ToDo: close market using ftx
+    close_ftx()
 
     print("Close all done.")
 
