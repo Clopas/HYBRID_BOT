@@ -291,9 +291,14 @@ def cleanup():
 # ##################### Get DCA bot id ##############################
 
 def dca_id():
-    for i in request_3commas('GET', dca_list_url):
-        if i['pairs'] == pair_3commas:
-            return i['id']
+    try:
+        dca_list_dca_id = request_3commas('GET', dca_list_url)
+        for i in dca_list_dca_id:
+            if i['pairs'] == pair_3commas:
+                return i['id']
+    except:
+        print('Sounds like there is no DCA.'+'\n'+dca_list_dca_id)
+        return None
 
 
 # #################### close all bots ########################################
@@ -322,13 +327,13 @@ def close_all():
             disable_grid_stop = request_3commas('POST', disable_grid_url.format(id=i['id']))
             print(f"\nGrid {i['id']} is disabled.\n" + str(disable_grid_stop))
 
-
     # panic sell dca
     dca_id_close_all = dca_id()
     request_3commas('POST', disable_dca_url.format(id=dca_id_close_all))
     panic_sell_close_all = request_3commas('POST', panic_sell_dca_url.format(bot_id=dca_id_close_all))
     print('\nDCA deals sold:\n' + str(panic_sell_close_all))
     close_ftx()
+    cleanup()
 
     print("Close all done.")
 
@@ -345,76 +350,79 @@ def start():
     SO4_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO4H}&lower_price={SO4L}&quantity_per_grid={SO4_qty[0]}&grids_quantity={SO4_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
     SO5_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO5H}&lower_price={SO5L}&quantity_per_grid={SO5_qty[0]}&grids_quantity={SO5_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
 
-    if len(enabled_grid_list_new) == 4:
+    if len(enabled_grid_list_new) == 5:
         dca_id_start = dca_id()
         # dca_edit = request_3commas('PATCH', edit_dca_url.format(bot_id=dca_id_start), dca_data_url)
         # print('\nDCA edited:\n' + str(dca_edit))
         # time.sleep(0.1)
+        panic_sell_start = request_3commas('POST', panic_sell_dca_url.format(bot_id=dca_id_start))
+        print('\nDCA deal panic sold:\n' + str(panic_sell_start))
+        time.sleep(0.1)
 
         dca_enable = request_3commas('POST', enable_dca_url.format(bot_id=dca_id_start))
         print('\nDCA enabled:\n' + str(dca_enable))
         time.sleep(0.1)
 
-        panic_sell_start = request_3commas('POST', panic_sell_dca_url.format(bot_id=dca_id_start))
-        print('\nDCA deal panic sold:\n' + str(panic_sell_start))
+        print('FTX position closed\n' + close_ftx())
         time.sleep(0.1)
 
-        so2_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[0][0]),
+        so2_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[1][0]),
                                    SO2_data_url)
         time.sleep(0.1)
-        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[0][0]))
+        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[1][0]))
         print('\nso2_edited:\n' + str(so2_edit))
         time.sleep(0.1)
 
-        so3_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[1][0]),
+        so3_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[2][0]),
                                    SO3_data_url)
         time.sleep(0.1)
-        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[1][0]))
+        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[2][0]))
         print('\nso3_edited:\n' + str(so3_edit))
         time.sleep(0.1)
 
-        so4_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[2][0]),
+        so4_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[3][0]),
                                    SO4_data_url)
         time.sleep(0.1)
-        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[2][0]))
+        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[3][0]))
         print('\nso4_edited:\n' + str(so4_edit))
         time.sleep(0.1)
 
-        so5_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[3][0]),
+        so5_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[4][0]),
                                    SO5_data_url)
         time.sleep(0.1)
-        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[3][0]))
+        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[4][0]))
         print('\nso5_edited:\n' + str(so5_edit))
 
         print("\nThe previously enabled bots are edited.")
 
     else:
         if len(enabled_grid_list_new) >= 0:
-            print("I couldn't find 6 grids to edit them. So I am creating new ones.")
+            print("I couldn't find bots to edit. So I am creating new ones.")
             close_all()
         enabled_grid_list_new.clear()
 
         dca_create = request_3commas('POST', create_dca_url, dca_data_url)
+        enabled_grid_list_new.append('dca:' + dca_create['id'])
         print('\nDCA created:\n' + str(dca_create))
         time.sleep(0.1)
 
         so2_create = request_3commas('POST', create_grid_url, SO2_data_url)
-        enabled_grid_list_new.append([so2_create['id'], so2_create['lower_price']])
+        enabled_grid_list_new.append([so2_create['id'], so2_create['lower_price'],so2_create['higher_price']])
         print('\nso2_create:\n' + str(so2_create))
         time.sleep(0.1)
 
         so3_create = request_3commas('POST', create_grid_url, SO3_data_url)
-        enabled_grid_list_new.append([so3_create['id'], so3_create['lower_price']])
+        enabled_grid_list_new.append([so3_create['id'], so3_create['lower_price'],so3_create['higher_price']])
         print('\nso3_create:\n' + str(so3_create))
         time.sleep(0.1)
 
         so4_create = request_3commas('POST', create_grid_url, SO4_data_url)
-        enabled_grid_list_new.append([so4_create['id'], so4_create['lower_price']])
+        enabled_grid_list_new.append([so4_create['id'], so4_create['lower_price'],so4_create['higher_price']])
         print('\nso4_create:\n' + str(so4_create))
         time.sleep(0.1)
 
         so5_create = request_3commas('POST', create_grid_url, SO5_data_url)
-        enabled_grid_list_new.append([so5_create['id'], so5_create['lower_price']])
+        enabled_grid_list_new.append([so5_create['id'], so5_create['lower_price'],so5_create['higher_price']])
         print('\nso5_create:\n' + str(so5_create))
 
         print('\nNew bots are created.')
@@ -429,15 +437,25 @@ def tp(profit_tp):
         print("Waiting for an open position.")
         time.sleep(10)
 
-    while not (position()[0] >= profit_tp):
-        price_tp = price()
-        for i in enabled_grid_list_new[1:]:
-            if price_tp <= float(i[1]):
-                request_3commas('POST', disable_grid_url.format(id=i[0]))
-                print(f"The higher grid {i} is disabled.")
+    while price() >= enabled_grid_list_new[1][2]:
+        print("Price hasn't entered the grids yet.")
         time.sleep(10)
-        continue
-    print("\nTake profit is executed. With specs as [p, avg, size, quote, pnl]:\n" + str(position()))
+    if price() < enabled_grid_list_new[1][2]:
+        print("Price entered the grids...\n disabling DCA...")
+        print(request_3commas('POST', disable_dca_url.format(bot_id=dca_id())))
+        time.sleep(0.1)
+
+        while not (position()[0] >= profit_tp):
+            price_tp = price()
+            for i in enabled_grid_list_new[1:]:
+                if price_tp <= float(i[1]):
+                    request_3commas('POST', disable_grid_url.format(id=i[0]))
+                    print(f"The higher grid {i} is disabled.")
+            time.sleep(10)
+            continue
+    else:
+        print('Apparently price is not higer than the grids but it is not lower either! All we know.')
+    print("\nTake profit is executing. With specs as [p, avg, size, quote, pnl]:\n" + str(position()))
     start()
     tp(profit_tp)
 
@@ -451,7 +469,6 @@ def run():
         tp(0.25)
     else:
         close_all()
-        cleanup()
         start()
         tp(0.25)
     pass
