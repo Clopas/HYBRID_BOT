@@ -328,10 +328,14 @@ def close_all():
             print(f"\nGrid {i['id']} is disabled.\n" + str(disable_grid_stop))
 
     # panic sell dca
-    dca_id_close_all = dca_id()
-    request_3commas('POST', disable_dca_url.format(id=dca_id_close_all))
-    panic_sell_close_all = request_3commas('POST', panic_sell_dca_url.format(bot_id=dca_id_close_all))
-    print('\nDCA deals sold:\n' + str(panic_sell_close_all))
+    try:
+        dca_id_close_all = dca_id()
+        print(dca_id_close_all)
+        request_3commas('POST', disable_dca_url.format(id=dca_id_close_all))
+        panic_sell_close_all = request_3commas('POST', panic_sell_dca_url.format(bot_id=dca_id_close_all))
+        print('\nDCA deals sold:\n' + str(panic_sell_close_all))
+    except:
+        print("No active DCA.")
     close_ftx()
     cleanup()
 
