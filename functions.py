@@ -8,6 +8,7 @@ import time
 from requests import Request, session
 from credentials import *
 
+
 # credentials
 # account_id_3commas = '' #a
 # api_key_3commas = '' #b
@@ -279,12 +280,12 @@ enabled_grid_list_new = []
 # ##################### Clean up useless grid bots ##############################
 def cleanup():
     grid_list_cleanup = request_3commas('GET', id_grid_url, '&limit=1000')
-    print(grid_list_cleanup)
+    #print(grid_list_cleanup)
     for i in grid_list_cleanup:
         if (i['is_enabled'] == False) and i['total_profits_count'] == '0':
             request_3commas('DELETE', delete_grid_url.format(id=i['id']))
             print('\n' + str(i['id']) + ' ' + str(i['pair']) + ' is deleted.')
-    print('Bots clean up is completed!')
+    print('Clean up is completed!')
 
 
 # print("log: cleanup() function")
@@ -308,7 +309,7 @@ def close_ftx():
         position_close_ftx = position()
         # print(position_close_ftx[2])
 
-        side_close_ftx='buy' if position_close_ftx[5] == 'sell' else 'sell'
+        side_close_ftx = 'buy' if position_close_ftx[5] == 'sell' else 'sell'
         json_close_ftx = {
             "market": pair_ftx,
             "side": side_close_ftx,
@@ -327,26 +328,26 @@ def close_ftx():
 
 
 def close_all():
+    print("Close all started...")
     grid_list_stop = request_3commas('GET', id_grid_url, '&limit=1000')
     for i in grid_list_stop:
         if i['is_enabled'] == True and i['pair'] == pair_3commas:
             disable_grid_stop = request_3commas('POST', disable_grid_url.format(id=i['id']))
             print(f"\nGrid {i['id']} is disabled.\n" + str(disable_grid_stop))
 
-    # panic sell dca
     try:
         dca_id_close_all = dca_id()
-        print(dca_id_close_all)
+        #print(dca_id_close_all)
         request_3commas('POST', disable_dca_url.format(id=dca_id_close_all))
         panic_sell_close_all = request_3commas('POST', panic_sell_dca_url.format(bot_id=dca_id_close_all))
         print('\nDCA deals sold:\n' + str(panic_sell_close_all))
-    except Exception as e:
-        print(e)
-        print("No active DCA.")
+    except KeyError as e:
+        #print('error:' + str(e))
+        print("No active DCA deals.")
     close_ftx()
     cleanup()
 
-    print("Close all done.")
+    print("Close all is done.")
 
 
 # print("log: close_all() function")
