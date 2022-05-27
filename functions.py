@@ -8,7 +8,6 @@ import time
 from requests import Request, session
 from credentials import *
 
-
 # credentials
 # account_id_3commas = '' #a
 # api_key_3commas = '' #b
@@ -60,21 +59,20 @@ leverage = 2
 def position():
     ftx_position_endpoint = '/positions?showAvgPrice=True'
     position_response = request_ftx('GET', ftx_position_endpoint)
-    #print(position_response)
+    # print(position_response)
     for i in position_response['result']:
         if i["future"] == pair_ftx:
             if i["size"] == 0.0:
                 print('You do not have an open', pair_ftx, 'position!')
                 return None
             else:
-                p = (i['recentPnl'] / balance) * 100
+                profit = (i['recentPnl'] / balance) * 100
                 avg = i['recentBreakEvenPrice']
                 size = i['size']
                 quote = i['cost']
                 pnl = i['recentPnl']
-                print(
-                    f"Your profit is {round(p, 4)}%, position size is {size} {pair_ftx} ~ {quote}$, unrealized p&l is {pnl}$, average price to break even is {avg}.")
-                return [p, avg, size, quote, pnl]
+                print(f"Your profit: {round(profit, 3)}%, position size: {size} {pair_ftx} ~ {round(quote,2)}$, unrealized P&L: {round(pnl,2)}$, break even price: {avg}.")
+                return [profit, avg, size, quote, pnl]
             # break
 
 
@@ -293,7 +291,7 @@ def cleanup():
 
 def dca_id():
     dca_list_dca_id = request_3commas('GET', dca_list_url)
-    #print(dca_list_dca_id)
+    # print(dca_list_dca_id)
     for i in dca_list_dca_id:
         if i['pairs'] == pair_3commas:
             return i['id']
@@ -304,21 +302,24 @@ def dca_id():
 
 # #################### close all bots ########################################
 def close_ftx():
-    null = None
-    true = True
-    size_close_ftx = position()[2]
-    print(size_close_ftx)
-    json_close_ftx = {
-        "market": pair_ftx,
-        "side": "sell",
-        "price": null,
-        "type": "market",
-        "size": size_close_ftx,
-        "reduceOnly": true,
-        "ioc": true,
-    }
-    a = request_ftx('POST', '/orders', json_close_ftx)
-    print(a)
+    try:
+        size_close_ftx = position()[2]
+        #print(size_close_ftx)
+        json_close_ftx = {
+            "market": pair_ftx,
+            "side": "sell",
+            "price": None,
+            "type": "market",
+            "size": size_close_ftx,
+            "reduceOnly": True,
+            "ioc": True,
+        }
+        a = request_ftx('POST', '/orders', json_close_ftx)
+        print('Closed the FTX position.')
+        #print(a)
+    except TypeError as e:
+        #print(e)
+        pass
 
 
 def close_all():
@@ -412,22 +413,22 @@ def start():
         time.sleep(0.1)
 
         so2_create = request_3commas('POST', create_grid_url, SO2_data_url)
-        enabled_grid_list_new.append([so2_create['id'], so2_create['lower_price'],so2_create['higher_price']])
+        enabled_grid_list_new.append([so2_create['id'], so2_create['lower_price'], so2_create['higher_price']])
         print('\nso2_create:\n' + str(so2_create))
         time.sleep(0.1)
 
         so3_create = request_3commas('POST', create_grid_url, SO3_data_url)
-        enabled_grid_list_new.append([so3_create['id'], so3_create['lower_price'],so3_create['higher_price']])
+        enabled_grid_list_new.append([so3_create['id'], so3_create['lower_price'], so3_create['higher_price']])
         print('\nso3_create:\n' + str(so3_create))
         time.sleep(0.1)
 
         so4_create = request_3commas('POST', create_grid_url, SO4_data_url)
-        enabled_grid_list_new.append([so4_create['id'], so4_create['lower_price'],so4_create['higher_price']])
+        enabled_grid_list_new.append([so4_create['id'], so4_create['lower_price'], so4_create['higher_price']])
         print('\nso4_create:\n' + str(so4_create))
         time.sleep(0.1)
 
         so5_create = request_3commas('POST', create_grid_url, SO5_data_url)
-        enabled_grid_list_new.append([so5_create['id'], so5_create['lower_price'],so5_create['higher_price']])
+        enabled_grid_list_new.append([so5_create['id'], so5_create['lower_price'], so5_create['higher_price']])
         print('\nso5_create:\n' + str(so5_create))
 
         print('\nNew bots are created.')
@@ -460,7 +461,7 @@ def tp(profit_tp):
             continue
     else:
         print('Apparently price is not higer than the grids but it is not lower either! All we know.')
-    print("\nTake profit is executing. With specs as [p, avg, size, quote, pnl]:\n" + str(position()))
+    print("\nTake profit is executing. With specs as [profit, avg, size, quote, pnl]:\n" + str(position()))
     start()
     tp(profit_tp)
 
