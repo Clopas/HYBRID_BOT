@@ -60,7 +60,7 @@ leverage = 2
 def position():
     ftx_position_endpoint = '/positions?showAvgPrice=True'
     position_response = request_ftx('GET', ftx_position_endpoint)
-    print(position_response)
+    #print(position_response)
     for i in position_response['result']:
         if i["future"] == pair_ftx:
             if i["size"] == 0.0:
@@ -279,6 +279,7 @@ enabled_grid_list_new = []
 # ##################### Clean up useless grid bots ##############################
 def cleanup():
     grid_list_cleanup = request_3commas('GET', id_grid_url, '&limit=1000')
+    print(grid_list_cleanup)
     for i in grid_list_cleanup:
         if (i['is_enabled'] == False) and i['total_profits_count'] == '0':
             request_3commas('DELETE', delete_grid_url.format(id=i['id']))
@@ -291,14 +292,14 @@ def cleanup():
 # ##################### Get DCA bot id ##############################
 
 def dca_id():
-    try:
-        dca_list_dca_id = request_3commas('GET', dca_list_url)
-        for i in dca_list_dca_id:
-            if i['pairs'] == pair_3commas:
-                return i['id']
-    except:
-        print('Sounds like there is no DCA.'+'\n'+dca_list_dca_id)
-        return None
+    dca_list_dca_id = request_3commas('GET', dca_list_url)
+    #print(dca_list_dca_id)
+    for i in dca_list_dca_id:
+        if i['pairs'] == pair_3commas:
+            return i['id']
+        else:
+            print(f'Sounds like there is no {pair_ftx} DCA.')
+            return None
 
 
 # #################### close all bots ########################################
