@@ -71,8 +71,10 @@ def position():
                 size = i['size']
                 quote = i['cost']
                 pnl = i['recentPnl']
-                print(f"Your profit: {round(profit, 3)}%, position size: {size} {pair_ftx} ~ {round(quote,2)}$, unrealized P&L: {round(pnl,2)}$, break even price: {avg}.")
-                return [profit, avg, size, quote, pnl]
+                side = i['side']
+                print(
+                    f"Your profit: {round(profit, 3)}%, position size: {size} {pair_ftx} ~ {round(quote, 2)}$, unrealized P&L: {round(pnl, 2)}$, break even price: {avg}.")
+                return [profit, avg, size, quote, pnl, side]
             # break
 
 
@@ -303,22 +305,24 @@ def dca_id():
 # #################### close all bots ########################################
 def close_ftx():
     try:
-        size_close_ftx = position()[2]
-        #print(size_close_ftx)
+        position_close_ftx = position()
+        # print(position_close_ftx[2])
+
+        side_close_ftx='buy' if position_close_ftx[5] == 'sell' else 'sell'
         json_close_ftx = {
             "market": pair_ftx,
-            "side": "sell",
+            "side": side_close_ftx,
             "price": None,
             "type": "market",
-            "size": size_close_ftx,
+            "size": position_close_ftx[2],
             "reduceOnly": True,
             "ioc": True,
         }
         a = request_ftx('POST', '/orders', json_close_ftx)
         print('Closed the FTX position.')
-        #print(a)
+        # print(a)
     except TypeError as e:
-        #print(e)
+        # print(e)
         pass
 
 
@@ -336,7 +340,8 @@ def close_all():
         request_3commas('POST', disable_dca_url.format(id=dca_id_close_all))
         panic_sell_close_all = request_3commas('POST', panic_sell_dca_url.format(bot_id=dca_id_close_all))
         print('\nDCA deals sold:\n' + str(panic_sell_close_all))
-    except:
+    except Exception as e:
+        print(e)
         print("No active DCA.")
     close_ftx()
     cleanup()
@@ -369,7 +374,7 @@ def start():
         print('\nDCA enabled:\n' + str(dca_enable))
         time.sleep(0.1)
 
-        print('FTX position closed\n' + close_ftx())
+        close_ftx()
         time.sleep(0.1)
 
         so2_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[1][0]),
@@ -460,7 +465,7 @@ def tp(profit_tp):
             time.sleep(10)
             continue
     else:
-        print('Apparently price is not higer than the grids but it is not lower either! All we know.')
+        print('Apparently price is not higher than the grids but it is not lower either! All we know.')
     print("\nTake profit is executing. With specs as [profit, avg, size, quote, pnl]:\n" + str(position()))
     start()
     tp(profit_tp)
