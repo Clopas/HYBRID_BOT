@@ -293,9 +293,9 @@ def cleanup():
 
 def dca_id():
     dca_list_dca_id = request_3commas('GET', dca_list_url)
-    # print(dca_list_dca_id)
+    #print(dca_list_dca_id)
     for i in dca_list_dca_id:
-        if i['pairs'] == pair_3commas:
+        if i['pairs'] == [pair_3commas]:
             return i['id']
         else:
             print(f'Sounds like there is no {pair_ftx} DCA.')
@@ -405,40 +405,40 @@ def start():
         print("\nThe previously enabled bots are edited.")
 
     else:
-        if len(enabled_grid_list_new) >= 0:
-            print("I couldn't find bots to edit. So I am creating new ones.")
-            close_all()
+        print("I couldn't find bots to edit. So I am creating new ones.")
+        close_all()
         enabled_grid_list_new.clear()
         dca_id_start_2 = dca_id()
         if dca_id_start_2 is None:
-            print("You Don't have a DCA bot. Create one first!")
+            raise Exception("You Don't have a DCA bot. Create one first!")
             # dca_create = request_3commas('POST', create_dca_url, dca_data_url, dca_json)
             # enabled_grid_list_new.append('dca:' + dca_create['id'])
             # print('\nDCA created:\n' + str(dca_create))
             # time.sleep(0.1)
-        else:
-            dca_enable = request_3commas('POST', enable_dca_url.format(bot_id=dca_id()))
-            print('\nDCA enabled:\n' + str(dca_enable))
-            enabled_grid_list_new.append('dca:' + dca_enable['id'])
+
+        dca_enable = request_3commas('POST', enable_dca_url.format(bot_id=dca_id()))
+        print('\nDCA enabled:\n' + str(dca_enable))
+        enabled_grid_list_new.append('dca:' + str(dca_enable['id']))
         time.sleep(0.1)
 
         so2_create = request_3commas('POST', create_grid_url, SO2_data_url)
-        enabled_grid_list_new.append([so2_create['id'], so2_create['lower_price'], so2_create['higher_price']])
+        print(so2_create)
+        enabled_grid_list_new.append([so2_create['id'], so2_create['lower_price'], so2_create['upper_price']])
         print('\nso2_create:\n' + str(so2_create))
         time.sleep(0.1)
 
         so3_create = request_3commas('POST', create_grid_url, SO3_data_url)
-        enabled_grid_list_new.append([so3_create['id'], so3_create['lower_price'], so3_create['higher_price']])
+        enabled_grid_list_new.append([so3_create['id'], so3_create['lower_price'], so3_create['upper_price']])
         print('\nso3_create:\n' + str(so3_create))
         time.sleep(0.1)
 
         so4_create = request_3commas('POST', create_grid_url, SO4_data_url)
-        enabled_grid_list_new.append([so4_create['id'], so4_create['lower_price'], so4_create['higher_price']])
+        enabled_grid_list_new.append([so4_create['id'], so4_create['lower_price'], so4_create['upper_price']])
         print('\nso4_create:\n' + str(so4_create))
         time.sleep(0.1)
 
         so5_create = request_3commas('POST', create_grid_url, SO5_data_url)
-        enabled_grid_list_new.append([so5_create['id'], so5_create['lower_price'], so5_create['higher_price']])
+        enabled_grid_list_new.append([so5_create['id'], so5_create['lower_price'], so5_create['upper_price']])
         print('\nso5_create:\n' + str(so5_create))
 
         print('\nNew bots are created.')
