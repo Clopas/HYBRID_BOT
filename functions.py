@@ -8,7 +8,6 @@ import time
 from requests import Request, session
 from credentials import *
 
-
 # credentials
 # account_id_3commas = '' #a
 # api_key_3commas = '' #b
@@ -280,7 +279,7 @@ enabled_grid_list_new = []
 # ##################### Clean up useless grid bots ##############################
 def cleanup():
     grid_list_cleanup = request_3commas('GET', id_grid_url, '&limit=1000')
-    #print(grid_list_cleanup)
+    # print(grid_list_cleanup)
     for i in grid_list_cleanup:
         if (i['is_enabled'] == False) and i['total_profits_count'] == '0':
             request_3commas('DELETE', delete_grid_url.format(id=i['id']))
@@ -337,12 +336,12 @@ def close_all():
 
     try:
         dca_id_close_all = dca_id()
-        #print(dca_id_close_all)
+        # print(dca_id_close_all)
         request_3commas('POST', disable_dca_url.format(id=dca_id_close_all))
         panic_sell_close_all = request_3commas('POST', panic_sell_dca_url.format(bot_id=dca_id_close_all))
         print('\nDCA deals sold:\n' + str(panic_sell_close_all))
     except KeyError as e:
-        #print('error:' + str(e))
+        # print('error:' + str(e))
         print("No active DCA deals.")
     close_ftx()
     cleanup()
@@ -356,6 +355,7 @@ def close_all():
 
 def start():
     # ########## 3commas data_urls ##########
+    #dca_json = "{\"strategy_list\": [{\"strategy\": \"nonstop\"}]}"
     dca_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&base_order_volume=50&take_profit='2.5'&safety_order_volume=4.32&martingale_volume_coefficient=1&martingale_step_coefficient=1&max_safety_orders=20&active_safety_orders_count=20&safety_order_step_percentage=0.675&take_profit_type=total&leverage_type=cross" + "&strategy_list=[{'strategy:nonstop'}]"
     SO2_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO2H}&lower_price={SO2L}&quantity_per_grid={SO2_qty[0]}&grids_quantity={SO2_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
     SO3_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO3H}&lower_price={SO3L}&quantity_per_grid={SO3_qty[0]}&grids_quantity={SO3_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
@@ -363,15 +363,12 @@ def start():
     SO5_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO5H}&lower_price={SO5L}&quantity_per_grid={SO5_qty[0]}&grids_quantity={SO5_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
 
     if len(enabled_grid_list_new) == 5:
-        dca_id_start = dca_id()
-        # dca_edit = request_3commas('PATCH', edit_dca_url.format(bot_id=dca_id_start), dca_data_url)
-        # print('\nDCA edited:\n' + str(dca_edit))
-        # time.sleep(0.1)
-        panic_sell_start = request_3commas('POST', panic_sell_dca_url.format(bot_id=dca_id_start))
-        print('\nDCA deal panic sold:\n' + str(panic_sell_start))
+        dca_id_start_1 = dca_id()
+        panic_sell_start = request_3commas('POST', panic_sell_dca_url.format(bot_id=dca_id_start_1))
+        print('\nDCA deal is panic sold:\n' + str(panic_sell_start))
         time.sleep(0.1)
 
-        dca_enable = request_3commas('POST', enable_dca_url.format(bot_id=dca_id_start))
+        dca_enable = request_3commas('POST', enable_dca_url.format(bot_id=dca_id_start_1))
         print('\nDCA enabled:\n' + str(dca_enable))
         time.sleep(0.1)
 
@@ -412,10 +409,17 @@ def start():
             print("I couldn't find bots to edit. So I am creating new ones.")
             close_all()
         enabled_grid_list_new.clear()
-
-        dca_create = request_3commas('POST', create_dca_url, dca_data_url)
-        enabled_grid_list_new.append('dca:' + dca_create['id'])
-        print('\nDCA created:\n' + str(dca_create))
+        dca_id_start_2 = dca_id()
+        if dca_id_start_2 is None:
+            print("You Don't have a DCA bot. Create one first!")
+            # dca_create = request_3commas('POST', create_dca_url, dca_data_url, dca_json)
+            # enabled_grid_list_new.append('dca:' + dca_create['id'])
+            # print('\nDCA created:\n' + str(dca_create))
+            # time.sleep(0.1)
+        else:
+            dca_enable = request_3commas('POST', enable_dca_url.format(bot_id=dca_id()))
+            print('\nDCA enabled:\n' + str(dca_enable))
+            enabled_grid_list_new.append('dca:' + dca_enable['id'])
         time.sleep(0.1)
 
         so2_create = request_3commas('POST', create_grid_url, SO2_data_url)
