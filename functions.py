@@ -472,23 +472,25 @@ def tp(profit_tp):
     while price() >= dca_info()[0]:
         print("Price hasn't entered the grids yet.")
         time.sleep(10)
-    if price() < dca_info()[0]:
-        print("Price entered the grids...\n disabling DCA...")
-        print(request_3commas('POST', disable_dca_url.format(bot_id=dca_id())))
-        time.sleep(0.1)
 
-        while not (position()[0] >= profit_tp):
-            price_tp = price()
+    print("Price entered the grids...\n disabling DCA...")
+    print(request_3commas('POST', disable_dca_url.format(bot_id=dca_id())))
+    time.sleep(0.1)
+
+    while not (position()[0] >= profit_tp):
+        price_tp = price()
+        if len(enabled_grid_list_new) == 5:
             for i in enabled_grid_list_new[1:]:
                 if price_tp <= float(i[1]):
                     request_3commas('POST', disable_grid_url.format(id=i[0]))
                     print(f"The higher grid {i} is disabled.")
             time.sleep(10)
             continue
-    else:
-        print('Apparently price is not higher than the grids but it is not lower either! That is all we know.')
+        else:
+            raise ValueError("There isn't 5 bots in the list! tp() cannot continue.")
     print("\nTake profit is executing. With specs as [profit, avg, size, quote, pnl]:\n" + str(position()))
     start()
+    time.sleep(10)
     tp(profit_tp)
 
 
