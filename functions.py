@@ -6,6 +6,7 @@ import time
 from requests import Request, session
 from credentials import *
 
+
 # credentials
 # account_id_3commas = '' #a
 # api_key_3commas = '' #b
@@ -307,9 +308,9 @@ def dca_info():
     # print('DCA info:')
     # print(request_dca_info)
     entry_price = float(request_dca_info['active_deals'][0]['base_order_average_price'])
-    safety_orders= float(request_dca_info['max_safety_orders'])
-    step_percentage= float(request_dca_info['safety_order_step_percentage'])
-    dca_low = entry_price*(1-(safety_orders*(step_percentage/100)))
+    safety_orders = float(request_dca_info['max_safety_orders'])
+    step_percentage = float(request_dca_info['safety_order_step_percentage'])
+    dca_low = entry_price * (1 - (safety_orders * (step_percentage / 100)))
     return [dca_low, entry_price, safety_orders, step_percentage]
 
 
@@ -422,7 +423,7 @@ def start():
     #    else:
     # print("No active bots already; Creating new ones first.")
     close_all()
-    # enabled_grid_list_new.clear()
+    enabled_grid_list_new.clear()
     dca_id_start_2 = dca_id()
     if dca_id_start_2 is None:
         raise Exception("You Don't have a DCA bot. Create one first!")
@@ -438,22 +439,22 @@ def start():
 
     so2_create = request_3commas('POST', create_grid_url, SO2_data_url)
     print(so2_create)
-    # enabled_grid_list_new.append([so2_create['id'], so2_create['lower_price'], so2_create['upper_price']])
+    enabled_grid_list_new.append([so2_create['id'], so2_create['lower_price'], so2_create['upper_price']])
     print('\nso2_create:\n' + str(so2_create))
     time.sleep(0.1)
 
     so3_create = request_3commas('POST', create_grid_url, SO3_data_url)
-    # enabled_grid_list_new.append([so3_create['id'], so3_create['lower_price'], so3_create['upper_price']])
+    enabled_grid_list_new.append([so3_create['id'], so3_create['lower_price'], so3_create['upper_price']])
     print('\nso3_create:\n' + str(so3_create))
     time.sleep(0.1)
 
     so4_create = request_3commas('POST', create_grid_url, SO4_data_url)
-    # enabled_grid_list_new.append([so4_create['id'], so4_create['lower_price'], so4_create['upper_price']])
+    enabled_grid_list_new.append([so4_create['id'], so4_create['lower_price'], so4_create['upper_price']])
     print('\nso4_create:\n' + str(so4_create))
     time.sleep(0.1)
 
     so5_create = request_3commas('POST', create_grid_url, SO5_data_url)
-    # enabled_grid_list_new.append([so5_create['id'], so5_create['lower_price'], so5_create['upper_price']])
+    enabled_grid_list_new.append([so5_create['id'], so5_create['lower_price'], so5_create['upper_price']])
     print('\nso5_create:\n' + str(so5_create))
 
     print('\nNew bots are created.')
@@ -471,7 +472,7 @@ def tp(profit_tp):
     while price() >= dca_info()[0]:
         print("Price hasn't entered the grids yet.")
         time.sleep(10)
-    if price() < float(enabled_grid_list_new[1][2]):
+    if price() < dca_info()[0]:
         print("Price entered the grids...\n disabling DCA...")
         print(request_3commas('POST', disable_dca_url.format(bot_id=dca_id())))
         time.sleep(0.1)
@@ -485,7 +486,7 @@ def tp(profit_tp):
             time.sleep(10)
             continue
     else:
-        print('Apparently price is not higher than the grids but it is not lower either! All we know.')
+        print('Apparently price is not higher than the grids but it is not lower either! That is all we know.')
     print("\nTake profit is executing. With specs as [profit, avg, size, quote, pnl]:\n" + str(position()))
     start()
     tp(profit_tp)
