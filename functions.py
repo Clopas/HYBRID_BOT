@@ -1,5 +1,3 @@
-# import importlib
-# import sys,os
 import json
 import requests
 import hmac
@@ -53,7 +51,7 @@ price_pair = price()
 
 # ##################### Get position details from FTX ######################
 # balance = 0
-leverage = 2
+leverage = 5
 
 
 def position():
@@ -63,6 +61,7 @@ def position():
     for i in position_response['result']:
         if i["future"] == pair_ftx:
             if i["size"] == 0.0:
+                # print(i['size'])
                 print('You do not have an open', pair_ftx, 'position!')
                 return None
             else:
@@ -217,6 +216,8 @@ edit_dca_url = '/ver1/bots/{bot_id}/update'  # PATCH
 asap_dca_url = '/ver1/bots/{bot_id}/start_new_deal'  # POST
 dca_list_url = '/ver1/bots'  # GET
 panic_sell_dca_url = '/ver1/bots/{bot_id}/panic_sell_all_deals'  # POST
+dca_deals_stats_url = '/ver1/bots/{bot_id}/deals_stats'  # GET
+dca_info_url = '/ver1/bots/{bot_id}/show'  # GET
 
 create_grid_url = '/ver1/grid_bots/manual'  # POST
 disable_grid_url = '/ver1/grid_bots/{id}/disable'  # POST
@@ -289,17 +290,27 @@ def cleanup():
 
 # print("log: cleanup() function")
 
-# ##################### Get DCA bot id ##############################
+# ##################### Get DCA info ##############################
 
 def dca_id():
     dca_list_dca_id = request_3commas('GET', dca_list_url)
-    #print(dca_list_dca_id)
+    # print(dca_list_dca_id)
     for i in dca_list_dca_id:
-        if i['pairs'] == [pair_3commas]:
+        if i['pairs'][0] == pair_3commas:
             return i['id']
-        else:
-            print(f'Sounds like there is no {pair_ftx} DCA.')
-            return None
+    print(f'Cannot get the DCA id. Sounds like there is no {pair_ftx} DCA.')
+    return None
+
+
+def dca_info():
+    request_dca_info = request_3commas('GET', dca_info_url.format(bot_id=dca_id()))
+    # print('DCA info:')
+    # print(request_dca_info)
+    entry_price = float(request_dca_info['active_deals'][0]['base_order_average_price'])
+    safety_orders= float(request_dca_info['max_safety_orders'])
+    step_percentage= float(request_dca_info['safety_order_step_percentage'])
+    dca_low = entry_price*(1-(safety_orders*(step_percentage/100)))
+    return [dca_low, entry_price, safety_orders, step_percentage]
 
 
 # #################### close all bots ########################################
@@ -320,14 +331,14 @@ def close_ftx():
         }
         a = request_ftx('POST', '/orders', json_close_ftx)
         print('Closed the FTX position.')
-        # print(a)
+        print(a)
     except TypeError as e:
-        # print(e)
+        print(e)
         pass
 
 
 def close_all():
-    print("Close all started...")
+    print("Close all started...\n")
     grid_list_stop = request_3commas('GET', id_grid_url, '&limit=1000')
     for i in grid_list_stop:
         if i['is_enabled'] == True and i['pair'] == pair_3commas:
@@ -336,15 +347,18 @@ def close_all():
 
     try:
         dca_id_close_all = dca_id()
-        # print(dca_id_close_all)
-        request_3commas('POST', disable_dca_url.format(id=dca_id_close_all))
+        print('bot id:' + str(dca_id_close_all))
+        print('Disable request sent to DCA...:\nResponse:')
+        print(request_3commas('POST', disable_dca_url.format(bot_id=dca_id_close_all)))
         panic_sell_close_all = request_3commas('POST', panic_sell_dca_url.format(bot_id=dca_id_close_all))
-        print('\nDCA deals sold:\n' + str(panic_sell_close_all))
+        print('\nPanic sell DCA deal request sent.\nResponse:\n' + str(panic_sell_close_all))
     except KeyError as e:
-        # print('error:' + str(e))
-        print("No active DCA deals.")
-    close_ftx()
-    cleanup()
+        print('error:' + str(e))
+        # Note: even when there is no deals, it doesn't return error.
+        print(
+            'Exception occured. Closing the position from ftx. Likely there is no active DCA deal...\n closing position...')
+        close_ftx()
+        cleanup()
 
     print("Close all is done.")
 
@@ -355,93 +369,94 @@ def close_all():
 
 def start():
     # ########## 3commas data_urls ##########
-    #dca_json = "{\"strategy_list\": [{\"strategy\": \"nonstop\"}]}"
+    # dca_json = "{\"strategy_list\": [{\"strategy\": \"nonstop\"}]}"
     dca_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&base_order_volume=50&take_profit='2.5'&safety_order_volume=4.32&martingale_volume_coefficient=1&martingale_step_coefficient=1&max_safety_orders=20&active_safety_orders_count=20&safety_order_step_percentage=0.675&take_profit_type=total&leverage_type=cross" + "&strategy_list=[{'strategy:nonstop'}]"
     SO2_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO2H}&lower_price={SO2L}&quantity_per_grid={SO2_qty[0]}&grids_quantity={SO2_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
     SO3_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO3H}&lower_price={SO3L}&quantity_per_grid={SO3_qty[0]}&grids_quantity={SO3_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
     SO4_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO4H}&lower_price={SO4L}&quantity_per_grid={SO4_qty[0]}&grids_quantity={SO4_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
     SO5_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO5H}&lower_price={SO5L}&quantity_per_grid={SO5_qty[0]}&grids_quantity={SO5_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
 
-    if len(enabled_grid_list_new) == 5:
-        dca_id_start_1 = dca_id()
-        panic_sell_start = request_3commas('POST', panic_sell_dca_url.format(bot_id=dca_id_start_1))
-        print('\nDCA deal is panic sold:\n' + str(panic_sell_start))
-        time.sleep(0.1)
+    #    if len(enabled_grid_list_new) == 5:
+    #        print('You have 5 active bots. Great!')
+    #        dca_id_start_1 = dca_id()
+    #        panic_sell_start = request_3commas('POST', panic_sell_dca_url.format(bot_id=dca_id_start_1))
+    #        print('\nDCA deal is panic sold:\n' + str(panic_sell_start))
+    #        time.sleep(0.1)
+    #
+    #        dca_enable = request_3commas('POST', enable_dca_url.format(bot_id=dca_id_start_1))
+    #        print('\nDCA enabled:\n' + str(dca_enable))
+    #        time.sleep(0.1)
+    #
+    #        close_ftx()
+    #        time.sleep(0.1)
+    #
+    #        so2_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[1][0]),
+    #                                   SO2_data_url)
+    #        time.sleep(0.1)
+    #        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[1][0]))
+    #        print('\nso2_edited:\n' + str(so2_edit))
+    #        time.sleep(0.1)
+    #
+    #        so3_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[2][0]),
+    #                                   SO3_data_url)
+    #        time.sleep(0.1)
+    #        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[2][0]))
+    #        print('\nso3_edited:\n' + str(so3_edit))
+    #        time.sleep(0.1)
+    #
+    #        so4_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[3][0]),
+    #                                   SO4_data_url)
+    #        time.sleep(0.1)
+    #        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[3][0]))
+    #        print('\nso4_edited:\n' + str(so4_edit))
+    #        time.sleep(0.1)
+    #
+    #        so5_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[4][0]),
+    #                                   SO5_data_url)
+    #        time.sleep(0.1)
+    #        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[4][0]))
+    #        print('\nso5_edited:\n' + str(so5_edit))
+    #
+    #        print("\nThe previously enabled bots are edited.")
+    #
+    #    else:
+    # print("No active bots already; Creating new ones first.")
+    close_all()
+    # enabled_grid_list_new.clear()
+    dca_id_start_2 = dca_id()
+    if dca_id_start_2 is None:
+        raise Exception("You Don't have a DCA bot. Create one first!")
+        # dca_create = request_3commas('POST', create_dca_url, dca_data_url, dca_json)
+        # enabled_grid_list_new.append('dca:' + dca_create['id'])
+        # print('\nDCA created:\n' + str(dca_create))
+        # time.sleep(0.1)
 
-        dca_enable = request_3commas('POST', enable_dca_url.format(bot_id=dca_id_start_1))
-        print('\nDCA enabled:\n' + str(dca_enable))
-        time.sleep(0.1)
+    dca_enable = request_3commas('POST', enable_dca_url.format(bot_id=dca_id()))
+    print('\nDCA enabled:\n' + str(dca_enable))
+    enabled_grid_list_new.append('dca:' + str(dca_enable['id']))
+    time.sleep(0.1)
 
-        close_ftx()
-        time.sleep(0.1)
+    so2_create = request_3commas('POST', create_grid_url, SO2_data_url)
+    print(so2_create)
+    # enabled_grid_list_new.append([so2_create['id'], so2_create['lower_price'], so2_create['upper_price']])
+    print('\nso2_create:\n' + str(so2_create))
+    time.sleep(0.1)
 
-        so2_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[1][0]),
-                                   SO2_data_url)
-        time.sleep(0.1)
-        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[1][0]))
-        print('\nso2_edited:\n' + str(so2_edit))
-        time.sleep(0.1)
+    so3_create = request_3commas('POST', create_grid_url, SO3_data_url)
+    # enabled_grid_list_new.append([so3_create['id'], so3_create['lower_price'], so3_create['upper_price']])
+    print('\nso3_create:\n' + str(so3_create))
+    time.sleep(0.1)
 
-        so3_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[2][0]),
-                                   SO3_data_url)
-        time.sleep(0.1)
-        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[2][0]))
-        print('\nso3_edited:\n' + str(so3_edit))
-        time.sleep(0.1)
+    so4_create = request_3commas('POST', create_grid_url, SO4_data_url)
+    # enabled_grid_list_new.append([so4_create['id'], so4_create['lower_price'], so4_create['upper_price']])
+    print('\nso4_create:\n' + str(so4_create))
+    time.sleep(0.1)
 
-        so4_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[3][0]),
-                                   SO4_data_url)
-        time.sleep(0.1)
-        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[3][0]))
-        print('\nso4_edited:\n' + str(so4_edit))
-        time.sleep(0.1)
+    so5_create = request_3commas('POST', create_grid_url, SO5_data_url)
+    # enabled_grid_list_new.append([so5_create['id'], so5_create['lower_price'], so5_create['upper_price']])
+    print('\nso5_create:\n' + str(so5_create))
 
-        so5_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[4][0]),
-                                   SO5_data_url)
-        time.sleep(0.1)
-        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[4][0]))
-        print('\nso5_edited:\n' + str(so5_edit))
-
-        print("\nThe previously enabled bots are edited.")
-
-    else:
-        print("I couldn't find bots to edit. So I am creating new ones.")
-        close_all()
-        enabled_grid_list_new.clear()
-        dca_id_start_2 = dca_id()
-        if dca_id_start_2 is None:
-            raise Exception("You Don't have a DCA bot. Create one first!")
-            # dca_create = request_3commas('POST', create_dca_url, dca_data_url, dca_json)
-            # enabled_grid_list_new.append('dca:' + dca_create['id'])
-            # print('\nDCA created:\n' + str(dca_create))
-            # time.sleep(0.1)
-
-        dca_enable = request_3commas('POST', enable_dca_url.format(bot_id=dca_id()))
-        print('\nDCA enabled:\n' + str(dca_enable))
-        enabled_grid_list_new.append('dca:' + str(dca_enable['id']))
-        time.sleep(0.1)
-
-        so2_create = request_3commas('POST', create_grid_url, SO2_data_url)
-        print(so2_create)
-        enabled_grid_list_new.append([so2_create['id'], so2_create['lower_price'], so2_create['upper_price']])
-        print('\nso2_create:\n' + str(so2_create))
-        time.sleep(0.1)
-
-        so3_create = request_3commas('POST', create_grid_url, SO3_data_url)
-        enabled_grid_list_new.append([so3_create['id'], so3_create['lower_price'], so3_create['upper_price']])
-        print('\nso3_create:\n' + str(so3_create))
-        time.sleep(0.1)
-
-        so4_create = request_3commas('POST', create_grid_url, SO4_data_url)
-        enabled_grid_list_new.append([so4_create['id'], so4_create['lower_price'], so4_create['upper_price']])
-        print('\nso4_create:\n' + str(so4_create))
-        time.sleep(0.1)
-
-        so5_create = request_3commas('POST', create_grid_url, SO5_data_url)
-        enabled_grid_list_new.append([so5_create['id'], so5_create['lower_price'], so5_create['upper_price']])
-        print('\nso5_create:\n' + str(so5_create))
-
-        print('\nNew bots are created.')
+    print('\nNew bots are created.')
 
 
 # print("log: start() function")
@@ -453,10 +468,10 @@ def tp(profit_tp):
         print("Waiting for an open position.")
         time.sleep(10)
 
-    while price() >= enabled_grid_list_new[1][2]:
+    while price() >= dca_info()[0]:
         print("Price hasn't entered the grids yet.")
         time.sleep(10)
-    if price() < enabled_grid_list_new[1][2]:
+    if price() < float(enabled_grid_list_new[1][2]):
         print("Price entered the grids...\n disabling DCA...")
         print(request_3commas('POST', disable_dca_url.format(bot_id=dca_id())))
         time.sleep(0.1)
