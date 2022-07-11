@@ -15,6 +15,7 @@ from credentials import *
 # api_secret_ftx = '' #e
 
 
+
 def request_ftx(request_type, ftx_endpoint='', request_json=None):
     if request_json is None:
         request_json = {}
@@ -334,7 +335,7 @@ def close_ftx():
             "ioc": True,
         }
         a = request_ftx('POST', '/orders', json_close_ftx)
-        print('Close FTX position sent.\n Response:')
+        print('\nClose FTX position request sent.\n Response:')
         print(a)
     except TypeError as e:
         print(e)
@@ -353,13 +354,13 @@ def close_all():
             print(f"\nGrid {i['id']} is disabled.\n" + str(disable_grid_stop))
 
     dca_id_close_all = dca_id()
-    print('bot id:' + str(dca_id_close_all))
-    print('Disable DCA request sent...:\nResponse:')
+    # print('bot id:' + str(dca_id_close_all))
+    print('Disable DCA request sent.\nResponse:')
     print(request_3commas('POST', disable_dca_url.format(bot_id=dca_id_close_all)))
     # Note: panic sell + close_ftx() causes opening position in the opposite direction.
     # panic_sell_close_all = request_3commas('POST', panic_sell_dca_url.format(bot_id=dca_id_close_all))
     # print('\nPanic sell DCA deal request sent.\nResponse:\n' + str(panic_sell_close_all))
-    print('Cancel DCA deal request sent.')
+    print('\nCancel DCA deal request sent.\nResponse:')
     print(request_3commas('POST', cancel_dca_deals_url.format(bot_id=dca_id_close_all)))
     close_ftx()
     cleanup()
@@ -467,7 +468,7 @@ def start():
     enabled_grid_list_new.append([so5_create['id'], so5_create['lower_price'], so5_create['upper_price']])
     print('\nso5_create:\n' + str(so5_create))
 
-    print('\nNew bots are created.')
+    print('\nNew bots are created.\n')
 
 
 # print("log: start() function")
@@ -508,11 +509,6 @@ def tp(profit_tp):
 
 # #################### main function ########################################
 def run():
-    if position() is not None:
-        start()
-        tp(0.25)
-    else:
-        close_all()
-        start()
-        tp(0.25)
+    start()
+    tp(0.25)
     pass
