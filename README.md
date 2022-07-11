@@ -8,11 +8,11 @@ What does this bot exactly do?
 This is a DCA_GRID hybrid bot that creates six grid bots whose volumes are scaled from top to bottom. Each bot has specific setting assigned to it by me according to my specific money and risk management algorithm. This bot aims to profit both from mini price movements(in 0.7% range)in each grid bot and price upward movement from the mean price average.
 Right now for better understanding of the mechanism you can check the code, or simply ask me. My social media handle is @blockchainophil ;)
 
-It is mainly an open source project which combines the best of the both worlds. dca and grid bots. The main idea is to manage the risk with dca while having the advantage of grid scalping. More information and documentation is on the way. Stay tuned!
+It is mainly an open source project which combines the best of the both worlds. DCA and grid bots. The main idea is to manage the risk with dca while having the advantage of grid scalping. More information and documentation is on the way. Stay tuned!
 
 The project is still in heavy testing. So use at your own risk.
 
-If you like this project, please cosider contributing to it.
+If you like this project, please consider contributing to it.
 
 How to use the webapp:
 
