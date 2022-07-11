@@ -320,6 +320,7 @@ def dca_info():
 def close_ftx():
     try:
         position_close_ftx = position()
+
         # print(position_close_ftx[2])
 
         side_close_ftx = 'buy' if position_close_ftx[5] == 'sell' else 'sell'
@@ -333,10 +334,13 @@ def close_ftx():
             "ioc": True,
         }
         a = request_ftx('POST', '/orders', json_close_ftx)
-        print('Closed the FTX position.')
+        print('Close FTX position sent.\n Response:')
         print(a)
     except TypeError as e:
         print(e)
+        pass
+    except AttributeError as ae:
+        print(ae + '\n Probably there is no open ftx position to close.')
         pass
 
 
@@ -355,7 +359,7 @@ def close_all():
     # Note: panic sell + close_ftx() causes opening position in the opposite direction.
     # panic_sell_close_all = request_3commas('POST', panic_sell_dca_url.format(bot_id=dca_id_close_all))
     # print('\nPanic sell DCA deal request sent.\nResponse:\n' + str(panic_sell_close_all))
-    print('Cancel the DCA deals request sent.')
+    print('Cancel DCA deal request sent.')
     print(request_3commas('POST', cancel_dca_deals_url.format(bot_id=dca_id_close_all)))
     close_ftx()
     cleanup()
