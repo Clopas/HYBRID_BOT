@@ -6,14 +6,12 @@ import time
 from requests import Request, session
 from credentials import *
 
-
 # credentials
 # account_id_3commas = '' #a
 # api_key_3commas = '' #b
 # api_secret_3commas = '' #c
 # api_key_ftx = '' #d
 # api_secret_ftx = '' #e
-
 
 
 def request_ftx(request_type, ftx_endpoint='', request_json=None):
@@ -80,46 +78,130 @@ def position():
             # break
 
 
+# ###################### 3commas endpoints ###########################
+create_dca_url = '/ver1/bots/create_bot'  # POST
+disable_dca_url = '/ver1/bots/{bot_id}/disable'  # POST
+enable_dca_url = '/ver1/bots/{bot_id}/enable'  # POST
+delete_dca_url = '/ver1/bots/{bot_id}/delete'  # POST
+edit_dca_url = '/ver1/bots/{bot_id}/update'  # PATCH
+asap_dca_url = '/ver1/bots/{bot_id}/start_new_deal'  # POST
+dca_list_url = '/ver1/bots'  # GET
+panic_sell_dca_url = '/ver1/bots/{bot_id}/panic_sell_all_deals'  # POST
+dca_deals_stats_url = '/ver1/bots/{bot_id}/deals_stats'  # GET
+dca_info_url = '/ver1/bots/{bot_id}/show'  # GET
+cancel_dca_deals_url = '/ver1/bots/{bot_id}/cancel_all_deals'  # POST
+
+create_grid_url = '/ver1/grid_bots/manual'  # POST
+disable_grid_url = '/ver1/grid_bots/{id}/disable'  # POST
+enable_grid_url = '/ver1/grid_bots/{id}/enable'  # POST
+edit_grid_url = '/ver1/grid_bots/{id}/manual'  # PATCH
+delete_grid_url = '/ver1/grid_bots/{id}'  # DELETE
+id_grid_url = '/ver1/grid_bots'  # GET
+
+create_smart_trade_url = '/v2/smart_trades'  # POST
+close_smart_trade_url = '/v2/smart_trades/{id}/close_by_market'  # POST
+enable_smart_trade_url = ''  # POST
+# edit_smart_trade_url=''
+delete_smart_trade_url = '/v2/smart_trades/{id}'  # DELETE
+id_smart_trade_url = '/v2/smart_trades'  # GET
+
+
+# ##################### 3commas requests function #############################
+
+def request_3commas(request_type, endpoint_url, data_url=''):
+    base_url = 'https://api.3commas.io/public/api'
+    key_url = f'?api_key={api_key_3commas}&secret={api_secret_3commas}'
+
+    signature_request_3commas = hmac.new(
+        bytes(api_secret_3commas, 'latin-1'),
+        msg=bytes('/public/api' + endpoint_url + key_url + (('&' + data_url) if data_url != '' else ''), 'latin-1'),
+        digestmod=hashlib.sha256).hexdigest().upper()
+
+    url_request_3commas = base_url + endpoint_url + key_url + (('&' + data_url) if data_url != '' else '')
+    headers_request_3commas = {'APIKEY': f'{api_key_3commas}', 'Signature': signature_request_3commas}
+    # print(url_request_3commas)  #test
+    if request_type == 'GET':
+        send_request_3commas = requests.get(url_request_3commas, headers=headers_request_3commas)
+    elif request_type == 'POST':
+        send_request_3commas = requests.post(url_request_3commas, headers=headers_request_3commas)
+    elif request_type == 'DELETE':
+        send_request_3commas = requests.delete(url_request_3commas, headers=headers_request_3commas)
+    elif request_type == 'PATCH':
+        send_request_3commas = requests.patch(url_request_3commas, headers=headers_request_3commas)
+    else:
+        raise TypeError("Request types should be one of the 'GET', 'POST', 'DELETE', 'PATCH' options! bro...")
+    return json.loads(send_request_3commas.content)
+
+
+# print(request_3commas('GET', id_grid_url))  # test
+# print("log: 3commas function")
+# ##################### Get DCA info ##############################
+
+def dca_id():
+    dca_list_dca_id = request_3commas('GET', dca_list_url)
+    # print(dca_list_dca_id)
+    for i in dca_list_dca_id:
+        if i['pairs'][0] == pair_3commas:
+            return i['id']
+    print(f'Cannot get the DCA id. Sounds like there is no {pair_ftx} DCA.')
+    return None
+
+
+def dca_info():
+    request_dca_info = request_3commas('GET', dca_info_url.format(bot_id=dca_id()))
+    # print('DCA info:')
+    # print(request_dca_info)
+    entry_price = float(request_dca_info['active_deals'][0]['base_order_average_price'])
+    safety_orders = float(request_dca_info['max_safety_orders'])
+    step_percentage = float(request_dca_info['safety_order_step_percentage'])
+    dca_low = entry_price * (1 - (safety_orders * (step_percentage / 100)))
+    return [dca_low, entry_price, safety_orders, step_percentage]
+
+
 # ##################### 3commas bot inputs for 50% D.D #######################
 
 pair_3commas = f"USD_{pair_ftx}"
+entry_price = dca_info()[1]
+#print('Entry price is: ' + str(entry_price))
 
-BOH = price_pair + (price_pair * 0.04)
-BOL = price_pair + (price_pair * (-0.05))
+# todo: BO and SO1 volumes are redundant but are still needed to calculate the balance. Should find a better way to calculate the balance.
+BOH = entry_price + (entry_price * 0.04)
+BOL = entry_price + (entry_price * (-0.05))
 
-SO1H = price_pair + (price_pair * (-0.05))
-SO1L = price_pair + (price_pair * (-0.14))
+SO1H = entry_price + (entry_price * (-0.05))
+SO1L = entry_price + (entry_price * (-0.14))
 
-SO2H = price_pair + (price_pair * (-0.14))
-SO2L = price_pair + (price_pair * (-0.23))
+SO2H = entry_price + (entry_price * (-0.14))
+SO2L = entry_price + (entry_price * (-0.23))
 
-SO3H = price_pair + (price_pair * (-0.23))
-SO3L = price_pair + (price_pair * (-0.32))
+SO3H = entry_price + (entry_price * (-0.23))
+SO3L = entry_price + (entry_price * (-0.32))
 
-SO4H = price_pair + (price_pair * (-0.32))
-SO4L = price_pair + (price_pair * (-0.41))
+SO4H = entry_price + (entry_price * (-0.32))
+SO4L = entry_price + (entry_price * (-0.41))
 
-SO5H = price_pair + (price_pair * (-0.41))
-SO5L = price_pair + (price_pair * (-0.5))
+SO5H = entry_price + (entry_price * (-0.41))
+SO5L = entry_price + (entry_price * (-0.5))
+
 # ##################### 3commas bot inputs for 40% D.D ########################
 
-# BOH = price_pair + (price_pair * (0.04))
-# BOL = price_pair + (price_pair * (-0.05))
+# BOH = entry_price + (entry_price * (0.04))
+# BOL = entry_price + (entry_price * (-0.05))
 
-# SO1H = price_pair + (price_pair * (-0.05))
-# SO1L = price_pair + (price_pair * (-0.12))
+# SO1H = entry_price + (entry_price * (-0.05))
+# SO1L = entry_price + (entry_price * (-0.12))
 
-# SO2H = price_pair + (price_pair * (-0.12))
-# SO2L = price_pair + (price_pair * (-0.19))
+# SO2H = entry_price + (entry_price * (-0.12))
+# SO2L = entry_price + (entry_price * (-0.19))
 
-# SO3H = price_pair + (price_pair * (-0.19))
-# SO3L = price_pair + (price_pair * (-0.26))
+# SO3H = entry_price + (entry_price * (-0.19))
+# SO3L = entry_price + (entry_price * (-0.26))
 
-# SO4H = price_pair + (price_pair * (-0.26))
-# SO4L = price_pair + (price_pair * (-0.33))
+# SO4H = entry_price + (entry_price * (-0.26))
+# SO4L = entry_price + (entry_price * (-0.33))
 
-# SO5H = price_pair + (price_pair * (-0.33))
-# SO5L = price_pair + (price_pair * (-0.4))
+# SO5H = entry_price + (entry_price * (-0.33))
+# SO5L = entry_price + (entry_price * (-0.4))
 
 # ##################### Settings for 50% D.D ########################
 
@@ -210,63 +292,7 @@ SO5_qty = grids_quantity(SO5)
 # print(round(((SO5H - SO5L) / (SO5H * (SO5_qty[1]))) * 100, 3))
 # print("log: Printed inputs")
 
-# ###################### 3commas endpoints ###########################
-create_dca_url = '/ver1/bots/create_bot'  # POST
-disable_dca_url = '/ver1/bots/{bot_id}/disable'  # POST
-enable_dca_url = '/ver1/bots/{bot_id}/enable'  # POST
-delete_dca_url = '/ver1/bots/{bot_id}/delete'  # POST
-edit_dca_url = '/ver1/bots/{bot_id}/update'  # PATCH
-asap_dca_url = '/ver1/bots/{bot_id}/start_new_deal'  # POST
-dca_list_url = '/ver1/bots'  # GET
-panic_sell_dca_url = '/ver1/bots/{bot_id}/panic_sell_all_deals'  # POST
-dca_deals_stats_url = '/ver1/bots/{bot_id}/deals_stats'  # GET
-dca_info_url = '/ver1/bots/{bot_id}/show'  # GET
-cancel_dca_deals_url = '/ver1/bots/{bot_id}/cancel_all_deals'  # POST
 
-create_grid_url = '/ver1/grid_bots/manual'  # POST
-disable_grid_url = '/ver1/grid_bots/{id}/disable'  # POST
-enable_grid_url = '/ver1/grid_bots/{id}/enable'  # POST
-edit_grid_url = '/ver1/grid_bots/{id}/manual'  # PATCH
-delete_grid_url = '/ver1/grid_bots/{id}'  # DELETE
-id_grid_url = '/ver1/grid_bots'  # GET
-
-create_smart_trade_url = '/v2/smart_trades'  # POST
-close_smart_trade_url = '/v2/smart_trades/{id}/close_by_market'  # POST
-enable_smart_trade_url = ''  # POST
-# edit_smart_trade_url=''
-delete_smart_trade_url = '/v2/smart_trades/{id}'  # DELETE
-id_smart_trade_url = '/v2/smart_trades'  # GET
-
-
-# ##################### 3commas requests function #############################
-
-def request_3commas(request_type, endpoint_url, data_url=''):
-    base_url = 'https://api.3commas.io/public/api'
-    key_url = f'?api_key={api_key_3commas}&secret={api_secret_3commas}'
-
-    signature_request_3commas = hmac.new(
-        bytes(api_secret_3commas, 'latin-1'),
-        msg=bytes('/public/api' + endpoint_url + key_url + (('&' + data_url) if data_url != '' else ''), 'latin-1'),
-        digestmod=hashlib.sha256).hexdigest().upper()
-
-    url_request_3commas = base_url + endpoint_url + key_url + (('&' + data_url) if data_url != '' else '')
-    headers_request_3commas = {'APIKEY': f'{api_key_3commas}', 'Signature': signature_request_3commas}
-    # print(url_request_3commas)  #test
-    if request_type == 'GET':
-        send_request_3commas = requests.get(url_request_3commas, headers=headers_request_3commas)
-    elif request_type == 'POST':
-        send_request_3commas = requests.post(url_request_3commas, headers=headers_request_3commas)
-    elif request_type == 'DELETE':
-        send_request_3commas = requests.delete(url_request_3commas, headers=headers_request_3commas)
-    elif request_type == 'PATCH':
-        send_request_3commas = requests.patch(url_request_3commas, headers=headers_request_3commas)
-    else:
-        raise TypeError("Request types should be one of the 'GET', 'POST', 'DELETE', 'PATCH' options! bro...")
-    return json.loads(send_request_3commas.content)
-
-
-# print(request_3commas('GET', id_grid_url))  # test
-# print("log: 3commas function")
 # ##################### Bot lists ##########################################
 grid_list = request_3commas('GET', id_grid_url, '&limit=1000')
 enabled_grid_list_new = []
@@ -294,28 +320,6 @@ def cleanup():
 
 # print("log: cleanup() function")
 
-# ##################### Get DCA info ##############################
-
-def dca_id():
-    dca_list_dca_id = request_3commas('GET', dca_list_url)
-    # print(dca_list_dca_id)
-    for i in dca_list_dca_id:
-        if i['pairs'][0] == pair_3commas:
-            return i['id']
-    print(f'Cannot get the DCA id. Sounds like there is no {pair_ftx} DCA.')
-    return None
-
-
-def dca_info():
-    request_dca_info = request_3commas('GET', dca_info_url.format(bot_id=dca_id()))
-    # print('DCA info:')
-    # print(request_dca_info)
-    entry_price = float(request_dca_info['active_deals'][0]['base_order_average_price'])
-    safety_orders = float(request_dca_info['max_safety_orders'])
-    step_percentage = float(request_dca_info['safety_order_step_percentage'])
-    dca_low = entry_price * (1 - (safety_orders * (step_percentage / 100)))
-    return [dca_low, entry_price, safety_orders, step_percentage]
-
 
 # #################### close all bots ########################################
 def close_ftx():
@@ -335,7 +339,7 @@ def close_ftx():
             "ioc": True,
         }
         a = request_ftx('POST', '/orders', json_close_ftx)
-        print('\nClose FTX position request sent.\n Response:')
+        print('\nClose FTX position request sent.\nResponse:')
         print(a)
     except TypeError as e:
         print(e)
@@ -382,58 +386,9 @@ def close_all():
 def start():
     # ########## 3commas data_urls ##########
     # dca_json = "{\"strategy_list\": [{\"strategy\": \"nonstop\"}]}"
-    dca_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&base_order_volume=50&take_profit='2.5'&safety_order_volume=4.32&martingale_volume_coefficient=1&martingale_step_coefficient=1&max_safety_orders=20&active_safety_orders_count=20&safety_order_step_percentage=0.675&take_profit_type=total&leverage_type=cross" + "&strategy_list=[{'strategy:nonstop'}]"
-    SO2_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO2H}&lower_price={SO2L}&quantity_per_grid={SO2_qty[0]}&grids_quantity={SO2_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
-    SO3_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO3H}&lower_price={SO3L}&quantity_per_grid={SO3_qty[0]}&grids_quantity={SO3_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
-    SO4_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO4H}&lower_price={SO4L}&quantity_per_grid={SO4_qty[0]}&grids_quantity={SO4_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
-    SO5_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO5H}&lower_price={SO5L}&quantity_per_grid={SO5_qty[0]}&grids_quantity={SO5_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
+    # dca_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&base_order_volume=50&take_profit='2.5'&safety_order_volume=4.32&martingale_volume_coefficient=1&martingale_step_coefficient=1&max_safety_orders=20&active_safety_orders_count=20&safety_order_step_percentage=0.675&take_profit_type=total&leverage_type=cross" + "&strategy_list=[{'strategy:nonstop'}]"
 
-    #    if len(enabled_grid_list_new) == 5:
-    #        print('You have 5 active bots. Great!')
-    #        dca_id_start_1 = dca_id()
-    #        panic_sell_start = request_3commas('POST', panic_sell_dca_url.format(bot_id=dca_id_start_1))
-    #        print('\nDCA deal is panic sold:\n' + str(panic_sell_start))
-    #        time.sleep(0.1)
-    #
-    #        dca_enable = request_3commas('POST', enable_dca_url.format(bot_id=dca_id_start_1))
-    #        print('\nDCA enabled:\n' + str(dca_enable))
-    #        time.sleep(0.1)
-    #
-    #        close_ftx()
-    #        time.sleep(0.1)
-    #
-    #        so2_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[1][0]),
-    #                                   SO2_data_url)
-    #        time.sleep(0.1)
-    #        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[1][0]))
-    #        print('\nso2_edited:\n' + str(so2_edit))
-    #        time.sleep(0.1)
-    #
-    #        so3_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[2][0]),
-    #                                   SO3_data_url)
-    #        time.sleep(0.1)
-    #        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[2][0]))
-    #        print('\nso3_edited:\n' + str(so3_edit))
-    #        time.sleep(0.1)
-    #
-    #        so4_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[3][0]),
-    #                                   SO4_data_url)
-    #        time.sleep(0.1)
-    #        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[3][0]))
-    #        print('\nso4_edited:\n' + str(so4_edit))
-    #        time.sleep(0.1)
-    #
-    #        so5_edit = request_3commas('PATCH', edit_grid_url.format(id=enabled_grid_list_new[4][0]),
-    #                                   SO5_data_url)
-    #        time.sleep(0.1)
-    #        request_3commas('POST', enable_grid_url.format(id=enabled_grid_list_new[4][0]))
-    #        print('\nso5_edited:\n' + str(so5_edit))
-    #
-    #        print("\nThe previously enabled bots are edited.")
-    #
-    #    else:
-    # print("No active bots already; Creating new ones first.")
-    close_all()
+    # close_all()
     enabled_grid_list_new.clear()
     dca_id_start_2 = dca_id()
     if dca_id_start_2 is None:
@@ -444,9 +399,14 @@ def start():
         # time.sleep(0.1)
 
     dca_enable = request_3commas('POST', enable_dca_url.format(bot_id=dca_id()))
-    print('\nDCA enabled:\n' + str(dca_enable))
+    print('\nDCA enabled.\nResponse:\n' + str(dca_enable))
     enabled_grid_list_new.append('dca:' + str(dca_enable['id']))
     time.sleep(0.1)
+
+    SO2_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO2H}&lower_price={SO2L}&quantity_per_grid={SO2_qty[0]}&grids_quantity={SO2_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
+    SO3_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO3H}&lower_price={SO3L}&quantity_per_grid={SO3_qty[0]}&grids_quantity={SO3_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
+    SO4_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO4H}&lower_price={SO4L}&quantity_per_grid={SO4_qty[0]}&grids_quantity={SO4_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
+    SO5_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO5H}&lower_price={SO5L}&quantity_per_grid={SO5_qty[0]}&grids_quantity={SO5_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
 
     so2_create = request_3commas('POST', create_grid_url, SO2_data_url)
     print(so2_create)
@@ -484,7 +444,7 @@ def tp(profit_tp):
         print("Price hasn't entered the grids yet.")
         time.sleep(10)
 
-    print("Price entered the grids...\n disabling DCA...")
+    print("Price entered the grids...\nDisable DCA request sent.\nResponse:")
     print(request_3commas('POST', disable_dca_url.format(bot_id=dca_id())))
     time.sleep(0.1)
 
@@ -498,8 +458,16 @@ def tp(profit_tp):
             time.sleep(10)
             continue
         else:
-            raise ValueError("There isn't 5 bots in the list! tp() cannot continue.")
+            grid_list_tp = request_3commas('GET', id_grid_url, '&limit=1000')
+            for i in grid_list_tp:
+                if i['is_enabled'] == True and i['pair'] == pair_3commas:
+                    disable_grid_tp = request_3commas('POST', disable_grid_url.format(id=i['id']))
+                    print(f"\nGrid {i['id']} is disabled.\n" + str(disable_grid_tp))
+            start()
+            tp(profit_tp)
+            # raise ValueError("There isn't 5 bots in the list! tp() cannot continue.")
     print("\nTake profit is executing. With specs as [profit, avg, size, quote, pnl]:\n" + str(position()))
+    close_all()
     start()
     time.sleep(10)
     tp(profit_tp)
@@ -509,6 +477,7 @@ def tp(profit_tp):
 
 # #################### main function ########################################
 def run():
+    close_all()
     start()
     tp(0.25)
     pass
