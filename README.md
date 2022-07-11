@@ -1,4 +1,5 @@
-# DCA~GRID HYBRID 3COMMAS+FTX BOT
+# HYBRID 3COMMAS BOT
+# All new v1.0 beta is here!
 
 They can't drop the price and range at the bottom no more!! We have a hybrid bot now. :))
 
@@ -30,6 +31,8 @@ Notes:
 * Code is compatible with heroku server out of the box. You just need to add "cloudamqp" heroku extention and configure it. more on this is in the link below: https://devcenter.heroku.com/articles/cloudamqp#installing-the-add-on
 * For security reasons it doesn't yet save your credentials until the app is fully bug tested.
 
+Code logic:
+![img.png](img.png)
 In case you want to buy me a cup of coffee or anything, here's my wallet address:
 (Ethereum, Polygon and BSC networks are ok ;))
 
