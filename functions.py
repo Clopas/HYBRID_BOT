@@ -14,6 +14,7 @@ from credentials import *
 # api_key_ftx = '' #d
 # api_secret_ftx = '' #e
 
+
 def request_ftx(request_type, ftx_endpoint='', request_json=None):
     if request_json is None:
         request_json = {}
@@ -219,6 +220,7 @@ dca_list_url = '/ver1/bots'  # GET
 panic_sell_dca_url = '/ver1/bots/{bot_id}/panic_sell_all_deals'  # POST
 dca_deals_stats_url = '/ver1/bots/{bot_id}/deals_stats'  # GET
 dca_info_url = '/ver1/bots/{bot_id}/show'  # GET
+cancel_dca_deals_url = '/ver1/bots/{bot_id}/cancel_all_deals'  # POST
 
 create_grid_url = '/ver1/grid_bots/manual'  # POST
 disable_grid_url = '/ver1/grid_bots/{id}/disable'  # POST
@@ -346,20 +348,24 @@ def close_all():
             disable_grid_stop = request_3commas('POST', disable_grid_url.format(id=i['id']))
             print(f"\nGrid {i['id']} is disabled.\n" + str(disable_grid_stop))
 
-    try:
-        dca_id_close_all = dca_id()
-        print('bot id:' + str(dca_id_close_all))
-        print('Disable request sent to DCA...:\nResponse:')
-        print(request_3commas('POST', disable_dca_url.format(bot_id=dca_id_close_all)))
-        panic_sell_close_all = request_3commas('POST', panic_sell_dca_url.format(bot_id=dca_id_close_all))
-        print('\nPanic sell DCA deal request sent.\nResponse:\n' + str(panic_sell_close_all))
-    except KeyError as e:
-        print('error:' + str(e))
-        # Note: even when there is no deals, it doesn't return error.
-        print(
-            'Exception occured. Closing the position from ftx. Likely there is no active DCA deal...\n closing position...')
-        close_ftx()
-        cleanup()
+    dca_id_close_all = dca_id()
+    print('bot id:' + str(dca_id_close_all))
+    print('Disable DCA request sent...:\nResponse:')
+    print(request_3commas('POST', disable_dca_url.format(bot_id=dca_id_close_all)))
+    # Note: panic sell + close_ftx() causes opening position in the opposite direction.
+    # panic_sell_close_all = request_3commas('POST', panic_sell_dca_url.format(bot_id=dca_id_close_all))
+    # print('\nPanic sell DCA deal request sent.\nResponse:\n' + str(panic_sell_close_all))
+    print('Cancel the DCA deals request sent.')
+    print(request_3commas('POST', cancel_dca_deals_url.format(bot_id=dca_id_close_all)))
+    close_ftx()
+    cleanup()
+    #    except KeyError as e:
+    #        print('error:' + str(e))
+    #        # Note: even when there is no deals, it doesn't return error.
+    #        print(
+    #            'Exception occured. Closing the position from ftx. Likely there is no active DCA deal...\n closing position...')
+    #        close_ftx()
+    #        cleanup()
 
     print("Close all is done.")
 
@@ -477,7 +483,7 @@ def tp(profit_tp):
     print(request_3commas('POST', disable_dca_url.format(bot_id=dca_id())))
     time.sleep(0.1)
 
-    while not (position()[0] >= profit_tp):
+    while position()[0] < profit_tp:
         price_tp = price()
         if len(enabled_grid_list_new) == 5:
             for i in enabled_grid_list_new[1:]:
