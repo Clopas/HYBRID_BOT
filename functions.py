@@ -163,15 +163,17 @@ def dca_id():
 
 
 def dca_info():
-    request_dca_info = request_3commas('GET', dca_info_url.format(bot_id=dca_id()))
-    # print('DCA info:')
-    # print(request_dca_info)
-    entry_price_dca_info = float(request_dca_info['active_deals'][0]['base_order_average_price'])
-    safety_orders = float(request_dca_info['max_safety_orders'])
-    step_percentage = float(request_dca_info['safety_order_step_percentage'])
-    dca_low = entry_price_dca_info * (1 - (safety_orders * (step_percentage / 100)))
-    return [dca_low, entry_price_dca_info, safety_orders, step_percentage]
-
+    try:
+        request_dca_info = request_3commas('GET', dca_info_url.format(bot_id=dca_id()))
+        # print('DCA info:')
+        # print(request_dca_info)
+        entry_price_dca_info = float(request_dca_info['active_deals'][0]['base_order_average_price'])
+        safety_orders = float(request_dca_info['max_safety_orders'])
+        step_percentage = float(request_dca_info['safety_order_step_percentage'])
+        dca_low = entry_price_dca_info * (1 - (safety_orders * (step_percentage / 100)))
+        return [dca_low, entry_price_dca_info, safety_orders, step_percentage]
+    except IndexError:
+        return None
 
 # ##################### 3commas bot inputs for 50% D.D #######################
 
@@ -345,23 +347,16 @@ def start():
     dca_enable = request_3commas('POST', enable_dca_url.format(bot_id=dca_id()))
     print('\nDCA enabled.\nResponse:\n' + str(dca_enable))
     enabled_grid_list_new.append('dca:' + str(dca_enable['id']))
-    time.sleep(5)
+    time.sleep(10)
 
     # ########### Grid bots ############
     entry_price_iteration =0
     entry_price=None
     while entry_price is None:
-        try:
-            entry_price = dca_info()[1]
-        except IndexError:
-            print("There's still no active DCA deal... waiting a bit more...")
-            time.sleep(10)
-            entry_price = dca_info()[1]
-        finally:
-            entry_price_iteration+=1
-            if entry_price_iteration==3:
-                raise IndexError("Found no active DCA deal to setup grids from it.")
-
+        entry_price=dca_info()[1]
+        entry_price_iteration+=1
+        if entry_price_iteration==3:
+            raise IndexError("Found no active DCA deal to setup grids from it.")
 
     # todo: BO and SO1 volumes are redundant but are still needed to calculate the balance. Should find a better way to calculate the balance.
     BOH = entry_price + (entry_price * 0.04)
