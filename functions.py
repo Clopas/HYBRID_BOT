@@ -9,7 +9,7 @@ from requests import Request, session
 from credentials import *
 
 
-# credentials
+# credentials for webapp
 account_id_3commas = '' #a
 api_key_3commas = '' #b
 api_secret_3commas = '' #c
