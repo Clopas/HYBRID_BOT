@@ -16,6 +16,7 @@ from credentials import *
 # api_key_ftx = '' #d
 # api_secret_ftx = '' #e
 
+
 def request_ftx(request_type, ftx_endpoint='', request_json=None):
     if request_json is None:
         request_json = {}
@@ -65,7 +66,7 @@ leverage = 5
 def position():
     ftx_position_endpoint = '/positions?showAvgPrice=True'
     position_response = request_ftx('GET', ftx_position_endpoint)
-    # print(position_response)
+    print(position_response)
     for i in position_response['result']:
         if i["future"] == pair_ftx:
             if i["size"] == 0.0:
@@ -283,8 +284,8 @@ def close_ftx():
     except TypeError as e:
         print(e)
         pass
-    except AttributeError as ae:
-        print(ae + '\n Probably there is no open ftx position to close.')
+    except AttributeError:
+        print('Probably there is no open ftx position to close.')
         pass
 
 
