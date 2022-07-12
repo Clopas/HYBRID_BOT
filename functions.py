@@ -1,4 +1,6 @@
 import json
+from json import JSONDecodeError
+
 import requests
 import hmac
 import hashlib
@@ -6,13 +8,13 @@ import time
 from requests import Request, session
 from credentials import *
 
+
 # credentials
 # account_id_3commas = '' #a
 # api_key_3commas = '' #b
 # api_secret_3commas = '' #c
 # api_key_ftx = '' #d
 # api_secret_ftx = '' #e
-
 
 def request_ftx(request_type, ftx_endpoint='', request_json=None):
     if request_json is None:
@@ -28,7 +30,12 @@ def request_ftx(request_type, ftx_endpoint='', request_json=None):
     prepared.headers['FTX-SIGN'] = signature_request_ftx
     prepared.headers['FTX-TS'] = str(ts)
     response = session().send(prepared)
-    loaded_response = json.loads(response.content)
+    try:
+        loaded_response = json.loads(response.content)
+    except JSONDecodeError as e:
+        print("Forgot VPN? ;)")
+        raise (e)
+
     # print(f"response is {loaded_response}")
     return loaded_response
 
@@ -141,8 +148,12 @@ def dca_id():
     dca_list_dca_id = request_3commas('GET', dca_list_url)
     # print(dca_list_dca_id)
     for i in dca_list_dca_id:
-        if i['pairs'][0] == pair_3commas:
-            return i['id']
+        try:
+            if i['pairs'][0] == pair_3commas:
+                return i['id']
+        except TypeError:
+            raise TypeError('API Credentials must be missing.')
+
     print(f'Cannot get the DCA id. Sounds like there is no {pair_ftx} DCA.')
     return None
 
@@ -150,7 +161,7 @@ def dca_id():
 def dca_info():
     request_dca_info = request_3commas('GET', dca_info_url.format(bot_id=dca_id()))
     # print('DCA info:')
-    # print(request_dca_info)
+    print(request_dca_info)
     entry_price = float(request_dca_info['active_deals'][0]['base_order_average_price'])
     safety_orders = float(request_dca_info['max_safety_orders'])
     step_percentage = float(request_dca_info['safety_order_step_percentage'])
@@ -161,27 +172,6 @@ def dca_info():
 # ##################### 3commas bot inputs for 50% D.D #######################
 
 pair_3commas = f"USD_{pair_ftx}"
-entry_price = dca_info()[1]
-#print('Entry price is: ' + str(entry_price))
-
-# todo: BO and SO1 volumes are redundant but are still needed to calculate the balance. Should find a better way to calculate the balance.
-BOH = entry_price + (entry_price * 0.04)
-BOL = entry_price + (entry_price * (-0.05))
-
-SO1H = entry_price + (entry_price * (-0.05))
-SO1L = entry_price + (entry_price * (-0.14))
-
-SO2H = entry_price + (entry_price * (-0.14))
-SO2L = entry_price + (entry_price * (-0.23))
-
-SO3H = entry_price + (entry_price * (-0.23))
-SO3L = entry_price + (entry_price * (-0.32))
-
-SO4H = entry_price + (entry_price * (-0.32))
-SO4L = entry_price + (entry_price * (-0.41))
-
-SO5H = entry_price + (entry_price * (-0.41))
-SO5L = entry_price + (entry_price * (-0.5))
 
 # ##################### 3commas bot inputs for 40% D.D ########################
 
@@ -219,43 +209,10 @@ SO1V50 = 36.34
 SCALE40 = 1.584
 # v_{0}=19
 SO1V40 = 30.1
+
+
 # r=0.236
 # d_{m}=0.32364
-# ##################### Print pair quantity & volume (per D.D) (base currency volume) ####################
-
-BO = (37 / price_pair)
-BOO = 37
-# print('\nBase currency volumes:\n' + str(round(BO)) + ' ' + pair_ftx)
-SO1 = (SO1V50 / (0.5 * (SO1H + SO1L)))
-SO1O = SO1V50
-# print(str(round(SO1, 2)) + ' ' + pair_ftx)
-SO2 = (SO1V50 * SCALE50) / (0.5 * (SO2H + SO2L))
-SO2O = SO1V50 * SCALE50
-# print(str(round(SO2, 2)) + ' ' + pair_ftx)
-SO3 = (SO1V50 * SCALE50 ** 2) / (0.5 * (SO3H + SO3L))
-SO3O = SO1V50 * SCALE50 ** 2
-# print(str(round(SO3, 2)) + ' ' + pair_ftx)
-SO4 = (SO1V50 * SCALE50 ** 3) / (0.5 * (SO4H + SO4L))
-SO4O = SO1V50 * SCALE50 ** 3
-# print(str(round(SO4, 2)) + ' ' + pair_ftx)
-SO5 = (SO1V50 * SCALE50 ** 4) / (0.5 * (SO5H + SO5L))
-SO5O = SO1V50 * SCALE50 ** 4
-# print(str(round(SO5, 2)) + ' ' + pair_ftx)
-
-# print(f"Total base currency size: {round((BO + SO1 + SO2 + SO3 + SO4 + SO5), 2)}")
-# print('BOO+SO1O+SO2O+SO3O+SO4O+SO5O)/price:' + str(round((BOO + SO1O + SO2O + SO3O + SO4O + SO5O) / price_pair, 2)))
-# ##################### #Print $$$ volume (quote currency volume) ####################
-# print('\nQuote currency volumes:\n' + str(BOO) + "$")
-# print(str(round(SO1O, 2)) + "$")
-# print(str(round(SO2O, 2)) + "$")
-# print(str(round(SO3O, 2)) + "$")
-# print(str(round(SO4O, 2)) + "$")
-# print(str(round(SO5O, 2)) + "$")
-
-balance = BOO + SO1O + SO2O + SO3O + SO4O + SO5O
-
-
-# print('Total balance: ' + str(round(balance, 2)) + '$\n')
 
 
 # ##################### Grids quantities #############################
@@ -269,18 +226,6 @@ def grids_quantity(grid_volume):
         raise ValueError("Damn it!!! I Couldn't find a good grid quantity!")
 
 
-BO_qty = grids_quantity(BO)
-# print(BO_qty)
-SO1_qty = grids_quantity(SO1)
-# print(SO1_qty)
-SO2_qty = grids_quantity(SO2)
-# print(SO2_qty)
-SO3_qty = grids_quantity(SO3)
-# print(SO3_qty)
-SO4_qty = grids_quantity(SO4)
-# print(SO4_qty)
-SO5_qty = grids_quantity(SO5)
-# print(SO5_qty)
 # ###################### #Print % of steps in every grid ###################
 
 # print('\n% of steps in every grid:')
@@ -297,12 +242,6 @@ SO5_qty = grids_quantity(SO5)
 grid_list = request_3commas('GET', id_grid_url, '&limit=1000')
 enabled_grid_list_new = []
 
-
-# for i in grid_list:
-#    if i['is_enabled'] == True and i['pair'] == pair_3commas:
-#        enabled_grid_list_new.append([i['id'], i['upper_price'], i['updated_at']])
-#        enabled_grid_list_new.sort(key=lambda x: x[1], reverse=True)
-#        # print(enabled_grid_list_new) #test
 
 # smart_trade_list = request_3commas('GET', id_smart_trade_url, '&status=active')
 
@@ -384,7 +323,8 @@ def close_all():
 
 
 def start():
-    # ########## 3commas data_urls ##########
+    # ############ DCA bot ##############
+
     # dca_json = "{\"strategy_list\": [{\"strategy\": \"nonstop\"}]}"
     # dca_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&base_order_volume=50&take_profit='2.5'&safety_order_volume=4.32&martingale_volume_coefficient=1&martingale_step_coefficient=1&max_safety_orders=20&active_safety_orders_count=20&safety_order_step_percentage=0.675&take_profit_type=total&leverage_type=cross" + "&strategy_list=[{'strategy:nonstop'}]"
 
@@ -402,6 +342,75 @@ def start():
     print('\nDCA enabled.\nResponse:\n' + str(dca_enable))
     enabled_grid_list_new.append('dca:' + str(dca_enable['id']))
     time.sleep(0.1)
+
+    # ########### Grid bots ############
+
+    entry_price = dca_info()[1]
+
+    # todo: BO and SO1 volumes are redundant but are still needed to calculate the balance. Should find a better way to calculate the balance.
+    BOH = entry_price + (entry_price * 0.04)
+    BOL = entry_price + (entry_price * (-0.05))
+
+    SO1H = entry_price + (entry_price * (-0.05))
+    SO1L = entry_price + (entry_price * (-0.14))
+
+    SO2H = entry_price + (entry_price * (-0.14))
+    SO2L = entry_price + (entry_price * (-0.23))
+
+    SO3H = entry_price + (entry_price * (-0.23))
+    SO3L = entry_price + (entry_price * (-0.32))
+
+    SO4H = entry_price + (entry_price * (-0.32))
+    SO4L = entry_price + (entry_price * (-0.41))
+
+    SO5H = entry_price + (entry_price * (-0.41))
+    SO5L = entry_price + (entry_price * (-0.5))
+
+    BO_qty = grids_quantity(BO)
+    # print(BO_qty)
+    SO1_qty = grids_quantity(SO1)
+    # print(SO1_qty)
+    SO2_qty = grids_quantity(SO2)
+    # print(SO2_qty)
+    SO3_qty = grids_quantity(SO3)
+    # print(SO3_qty)
+    SO4_qty = grids_quantity(SO4)
+    # print(SO4_qty)
+    SO5_qty = grids_quantity(SO5)
+    # print(SO5_qty)
+
+    BO = (37 / price_pair)
+    BOO = 37
+    # print('\nBase currency volumes:\n' + str(round(BO)) + ' ' + pair_ftx)
+    SO1 = (SO1V50 / (0.5 * (SO1H + SO1L)))
+    SO1O = SO1V50
+    # print(str(round(SO1, 2)) + ' ' + pair_ftx)
+    SO2 = (SO1V50 * SCALE50) / (0.5 * (SO2H + SO2L))
+    SO2O = SO1V50 * SCALE50
+    # print(str(round(SO2, 2)) + ' ' + pair_ftx)
+    SO3 = (SO1V50 * SCALE50 ** 2) / (0.5 * (SO3H + SO3L))
+    SO3O = SO1V50 * SCALE50 ** 2
+    # print(str(round(SO3, 2)) + ' ' + pair_ftx)
+    SO4 = (SO1V50 * SCALE50 ** 3) / (0.5 * (SO4H + SO4L))
+    SO4O = SO1V50 * SCALE50 ** 3
+    # print(str(round(SO4, 2)) + ' ' + pair_ftx)
+    SO5 = (SO1V50 * SCALE50 ** 4) / (0.5 * (SO5H + SO5L))
+    SO5O = SO1V50 * SCALE50 ** 4
+    # print(str(round(SO5, 2)) + ' ' + pair_ftx)
+
+    # print(f"Total base currency size: {round((BO + SO1 + SO2 + SO3 + SO4 + SO5), 2)}")
+    # print('BOO+SO1O+SO2O+SO3O+SO4O+SO5O)/price:' + str(round((BOO + SO1O + SO2O + SO3O + SO4O + SO5O) / price_pair, 2)))
+    # ##################### #Print $$$ volume (quote currency volume) ####################
+    # print('\nQuote currency volumes:\n' + str(BOO) + "$")
+    # print(str(round(SO1O, 2)) + "$")
+    # print(str(round(SO2O, 2)) + "$")
+    # print(str(round(SO3O, 2)) + "$")
+    # print(str(round(SO4O, 2)) + "$")
+    # print(str(round(SO5O, 2)) + "$")
+
+    balance = BOO + SO1O + SO2O + SO3O + SO4O + SO5O
+
+    # print('Total balance: ' + str(round(balance, 2)) + '$\n')
 
     SO2_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO2H}&lower_price={SO2L}&quantity_per_grid={SO2_qty[0]}&grids_quantity={SO2_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
     SO3_data_url = f"&account_id={account_id_3commas}&pair={pair_3commas}&upper_price={SO3H}&lower_price={SO3L}&quantity_per_grid={SO3_qty[0]}&grids_quantity={SO3_qty[1]}&leverage_type=cross&leverage_custom_value={leverage}&is_enabled=true"
