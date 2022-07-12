@@ -357,7 +357,7 @@ def start():
         entry_price_iteration+=1
         if entry_price_iteration==3:
             raise IndexError("Found no active DCA deal to setup grids from it.")
-
+    print("Entry price is: " +entry_price)
     # todo: BO and SO1 volumes are redundant but are still needed to calculate the balance. Should find a better way to calculate the balance.
     BOH = entry_price + (entry_price * 0.04)
     BOL = entry_price + (entry_price * (-0.05))
@@ -376,19 +376,6 @@ def start():
 
     SO5H = entry_price + (entry_price * (-0.41))
     SO5L = entry_price + (entry_price * (-0.5))
-
-    BO_qty = grids_quantity(BO)
-    # print(BO_qty)
-    SO1_qty = grids_quantity(SO1)
-    # print(SO1_qty)
-    SO2_qty = grids_quantity(SO2)
-    # print(SO2_qty)
-    SO3_qty = grids_quantity(SO3)
-    # print(SO3_qty)
-    SO4_qty = grids_quantity(SO4)
-    # print(SO4_qty)
-    SO5_qty = grids_quantity(SO5)
-    # print(SO5_qty)
 
     BO = (37 / price_pair)
     BOO = 37
@@ -409,6 +396,7 @@ def start():
     SO5O = SO1V50 * SCALE50 ** 4
     # print(str(round(SO5, 2)) + ' ' + pair_ftx)
 
+
     # print(f"Total base currency size: {round((BO + SO1 + SO2 + SO3 + SO4 + SO5), 2)}")
     # print('BOO+SO1O+SO2O+SO3O+SO4O+SO5O)/price:' + str(round((BOO + SO1O + SO2O + SO3O + SO4O + SO5O) / price_pair, 2)))
     # ##################### #Print $$$ volume (quote currency volume) ####################
@@ -419,7 +407,21 @@ def start():
     # print(str(round(SO4O, 2)) + "$")
     # print(str(round(SO5O, 2)) + "$")
 
+
     balance = BOO + SO1O + SO2O + SO3O + SO4O + SO5O
+
+    BO_qty = grids_quantity(BO)
+    # print(BO_qty)
+    SO1_qty = grids_quantity(SO1)
+    # print(SO1_qty)
+    SO2_qty = grids_quantity(SO2)
+    # print(SO2_qty)
+    SO3_qty = grids_quantity(SO3)
+    # print(SO3_qty)
+    SO4_qty = grids_quantity(SO4)
+    # print(SO4_qty)
+    SO5_qty = grids_quantity(SO5)
+    # print(SO5_qty)
 
     # print('Total balance: ' + str(round(balance, 2)) + '$\n')
 
