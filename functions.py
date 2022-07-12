@@ -10,11 +10,11 @@ from credentials import *
 
 
 # credentials
-account_id_3commas = '' #a
-api_key_3commas = '' #b
-api_secret_3commas = '' #c
-api_key_ftx = '' #d
-api_secret_ftx = '' #e
+#account_id_3commas = '' #a
+#api_key_3commas = '' #b
+#api_secret_3commas = '' #c
+#api_key_ftx = '' #d
+#api_secret_ftx = '' #e
 
 
 def request_ftx(request_type, ftx_endpoint='', request_json=None):
