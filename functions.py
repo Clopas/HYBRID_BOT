@@ -59,7 +59,7 @@ price_pair = price()
 # print(f"{pair_ftx} price is {price_pair}")
 
 # ##################### Get position details from FTX ######################
-# balance = 0
+balance = 500
 leverage = 5
 
 
