@@ -67,22 +67,25 @@ def position():
     ftx_position_endpoint = '/positions?showAvgPrice=True'
     position_response = request_ftx('GET', ftx_position_endpoint)
     #print(position_response)
-    for i in position_response['result']:
-        if i["future"] == pair_ftx:
-            if i["size"] == 0.0:
-                # print(i['size'])
-                print('You do not have an open', pair_ftx, 'position!')
-                return None
-            else:
-                profit = (i['recentPnl'] / balance) * 100
-                avg = i['recentBreakEvenPrice']
-                size = i['size']
-                quote = i['cost']
-                pnl = i['recentPnl']
-                side = i['side']
-                print(
-                    f"Your profit: {round(profit, 3)}%, position size: {size} {pair_ftx} ~ {round(quote, 2)}$, unrealized P&L: {round(pnl, 2)}$, break even price: {avg}.")
-                return [profit, avg, size, quote, pnl, side]
+    try:
+        for i in position_response['result']:
+            if i["future"] == pair_ftx:
+                if i["size"] == 0.0:
+                    # print(i['size'])
+                    print('You do not have an open', pair_ftx, 'position!')
+                    return None
+                else:
+                    profit = (i['recentPnl'] / balance) * 100
+                    avg = i['recentBreakEvenPrice']
+                    size = i['size']
+                    quote = i['cost']
+                    pnl = i['recentPnl']
+                    side = i['side']
+                    print(
+                        f"Your profit: {round(profit, 3)}%, position size: {size} {pair_ftx} ~ {round(quote, 2)}$, unrealized P&L: {round(pnl, 2)}$, break even price: {avg}.")
+                    return [profit, avg, size, quote, pnl, side]
+    except KeyError:
+        raise KeyError("API Credentials must be missing.")
             # break
 
 
