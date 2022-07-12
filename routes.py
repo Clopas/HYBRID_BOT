@@ -25,11 +25,14 @@ celery = make_celery(flask_app)
 
 # ##################### Celery Tasks ##############################
 @celery.task(name='routes.celery_close_all')
-def celery_close_all(b, c):
+def celery_close_all(a,b, c,d,e):
     # import functions
     # importlib.reload(functions)
+    functions.account_id_3commas = a
     functions.api_key_3commas = b
     functions.api_secret_3commas = c
+    functions.api_key_ftx = d
+    functions.api_secret_ftx = e
     return close_all()
 
 
@@ -100,8 +103,9 @@ def signup():
                 return render_template("result-run.html")
 
             elif form.close_all_button.data:
-                celery_close_all.delay(form.api_key_3commas_signup.data,
-                                       form.api_secret_3commas_signup.data)
+                celery_close_all.delay(form.account_id_3commas_signup.data, form.api_key_3commas_signup.data,
+                                 form.api_secret_3commas_signup.data, form.api_key_ftx_signup.data,
+                                 form.api_secret_ftx_signup.data)
                 # result_close_all.get()
                 # get_or_create_eventloop().run_until_complete(close_all())
                 # close_all()

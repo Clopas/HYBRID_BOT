@@ -164,8 +164,9 @@ def dca_id():
 
 def dca_info():
     request_dca_info = request_3commas('GET', dca_info_url.format(bot_id=dca_id()))
-    # print('DCA info:')
-    # print(request_dca_info)
+    #update
+    print('DCA info:')
+    print(request_dca_info)
     entry_price = float(request_dca_info['active_deals'][0]['base_order_average_price'])
     safety_orders = float(request_dca_info['max_safety_orders'])
     step_percentage = float(request_dca_info['safety_order_step_percentage'])
