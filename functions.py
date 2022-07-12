@@ -9,12 +9,12 @@ from requests import Request, session
 from credentials import *
 
 
-# credentials for webapp
-account_id_3commas = '' #a
-api_key_3commas = '' #b
-api_secret_3commas = '' #c
-api_key_ftx = '' #d
-api_secret_ftx = '' #e
+# credentials
+# account_id_3commas = '' #a
+# api_key_3commas = '' #b
+# api_secret_3commas = '' #c
+# api_key_ftx = '' #d
+# api_secret_ftx = '' #e
 
 
 def request_ftx(request_type, ftx_endpoint='', request_json=None):
@@ -66,7 +66,7 @@ leverage = 5
 def position():
     ftx_position_endpoint = '/positions?showAvgPrice=True'
     position_response = request_ftx('GET', ftx_position_endpoint)
-    #print(position_response)
+    # print(position_response)
     try:
         for i in position_response['result']:
             if i["future"] == pair_ftx:
@@ -86,7 +86,7 @@ def position():
                     return [profit, avg, size, quote, pnl, side]
     except KeyError:
         raise KeyError("API Credentials must be missing.")
-            # break
+        # break
 
 
 # ###################### 3commas endpoints ###########################
