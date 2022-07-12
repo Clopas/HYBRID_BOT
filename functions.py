@@ -66,7 +66,7 @@ leverage = 5
 def position():
     ftx_position_endpoint = '/positions?showAvgPrice=True'
     position_response = request_ftx('GET', ftx_position_endpoint)
-    print(position_response)
+    #print(position_response)
     for i in position_response['result']:
         if i["future"] == pair_ftx:
             if i["size"] == 0.0:
