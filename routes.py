@@ -115,7 +115,11 @@ def signup():
                 return render_template("result-cleanup.html")
             elif form.position_button.data:
                 p = position()
-                return f"<h1>Your profit is {round(p[0], 4)}%, position size is {p[2]} EOS-PERP ~ {p[3]}$, unrealized p&l is {p[4]}$, average price to break even is {p[1]}.</h1>"
+                if p is not None:
+                    return f"<h1>Your profit is {round(p[0], 4)}%, position size is {p[2]} EOS-PERP ~ {p[3]}$, unrealized p&l is {p[4]}$, average price to break even is {p[1]}.</h1>"
+                else:
+                    return "You Don't have an open EOS-PERP position."
+
             elif form.tp_button.data:
                 celery_tp.delay(form.account_id_3commas_signup.data, form.api_key_3commas_signup.data,
                                 form.api_secret_3commas_signup.data, form.api_key_ftx_signup.data,
