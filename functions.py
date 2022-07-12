@@ -346,11 +346,15 @@ def start():
     dca_enable = request_3commas('POST', enable_dca_url.format(bot_id=dca_id()))
     print('\nDCA enabled.\nResponse:\n' + str(dca_enable))
     enabled_grid_list_new.append('dca:' + str(dca_enable['id']))
-    time.sleep(0.1)
+    time.sleep(5)
 
     # ########### Grid bots ############
-
-    entry_price = dca_info()[1]
+    try:
+        entry_price = dca_info()[1]
+    except IndexError:
+        print("There's still no active DCA deal... waiting a bit more...")
+        time.sleep(5)
+        entry_price = dca_info()[1]
 
     # todo: BO and SO1 volumes are redundant but are still needed to calculate the balance. Should find a better way to calculate the balance.
     BOH = entry_price + (entry_price * 0.04)
