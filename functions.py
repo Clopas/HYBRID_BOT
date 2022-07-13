@@ -489,7 +489,7 @@ def tp(profit_tp):
             for i in grid_list_tp:
                 if i['is_enabled'] == True and i['pair'] == pair_3commas:
                     disable_grid_tp = request_3commas('POST', disable_grid_url.format(id=i['id']))
-                    print(f"\nGrid {i['id']} is disabled.\n" + str(disable_grid_tp))
+                    print(f"\nGrid {i['id']} is disabled.\n") # + str(disable_grid_tp))
             start()
             tp(profit_tp)
             # raise ValueError("There isn't 5 bots in the list! tp() cannot continue.")
