@@ -347,7 +347,7 @@ def start():
     dca_enable = request_3commas('POST', enable_dca_url.format(bot_id=dca_id()))
     print('\nDCA enabled.\nResponse:\n' + str(dca_enable))
     enabled_grid_list_new.append('dca:' + str(dca_enable['id']))
-    time.sleep(10)
+    time.sleep(20)
 
     # ########### Grid bots ############
     entry_price_iteration =0
@@ -355,6 +355,7 @@ def start():
     while entry_price is None:
         entry_price=dca_info()[1]
         entry_price_iteration+=1
+        time.sleep(20)
         if entry_price_iteration==3:
             raise IndexError("Found no active DCA deal to setup grids from it.")
     print("Entry price is: " +entry_price)
