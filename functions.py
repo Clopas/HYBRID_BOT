@@ -165,8 +165,8 @@ def dca_id():
 def dca_info():
     try:
         request_dca_info = request_3commas('GET', dca_info_url.format(bot_id=dca_id()))
-        # print('DCA info:')
-        # print(request_dca_info)
+        print('DCA info:\n')
+        print(request_dca_info)
         entry_price_dca_info = float(request_dca_info['active_deals'][0]['base_order_average_price'])
         safety_orders = float(request_dca_info['max_safety_orders'])
         step_percentage = float(request_dca_info['safety_order_step_percentage'])
@@ -259,7 +259,7 @@ def cleanup():
     for i in grid_list_cleanup:
         if (i['is_enabled'] == False) and i['total_profits_count'] == '0':
             request_3commas('DELETE', delete_grid_url.format(id=i['id']))
-            print('\n' + str(i['id']) + ' ' + str(i['pair']) + ' is deleted.')
+            print('\n' +'Grid '+ str(i['id']) + ' ' + str(i['pair']) + ' is deleted.')
     print('Clean up is completed!')
 
 
@@ -347,18 +347,22 @@ def start():
     dca_enable = request_3commas('POST', enable_dca_url.format(bot_id=dca_id()))
     print('\nDCA enabled.\nResponse:\n' + str(dca_enable))
     enabled_grid_list_new.append('dca:' + str(dca_enable['id']))
-    time.sleep(20)
+    print("Waiting for DCA to open an active deal...")
+    time.sleep(40)
 
     # ########### Grid bots ############
-    entry_price_iteration =0
     entry_price=None
     while entry_price is None:
-        entry_price=dca_info()[1]
-        entry_price_iteration+=1
-        time.sleep(20)
-        if entry_price_iteration==3:
-            raise IndexError("Found no active DCA deal to setup grids from it.")
-    print("Entry price is: " +entry_price)
+        try:
+            time.sleep(5)
+            # print("entry price is:")
+            # print(entry_price)
+            entry_price=dca_info()[1]
+        except TypeError:
+            pass
+
+        print("Entry price is:")
+        print(entry_price)
     # todo: BO and SO1 volumes are redundant but are still needed to calculate the balance. Should find a better way to calculate the balance.
     BOH = entry_price + (entry_price * 0.04)
     BOL = entry_price + (entry_price * (-0.05))
