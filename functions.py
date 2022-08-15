@@ -1,4 +1,5 @@
 import json
+import urllib
 from json import JSONDecodeError
 
 import requests
@@ -10,11 +11,11 @@ from credentials import *
 
 
 # credentials
-#account_id_3commas = '' #a
-#api_key_3commas = '' #b
-#api_secret_3commas = '' #c
-#api_key_ftx = '' #d
-#api_secret_ftx = '' #e
+# account_id_3commas = '' #a
+# api_key_3commas = '' #b
+# api_secret_3commas = '' #c
+# api_key_ftx = '' #d
+# api_secret_ftx = '' #e
 
 
 def request_ftx(request_type, ftx_endpoint='', request_json=None):
@@ -30,6 +31,8 @@ def request_ftx(request_type, ftx_endpoint='', request_json=None):
     prepared.headers['FTX-KEY'] = api_key_ftx
     prepared.headers['FTX-SIGN'] = signature_request_ftx
     prepared.headers['FTX-TS'] = str(ts)
+    # This line should be commented if ftx subaccount isn't being used.
+    prepared.headers['FTX-SUBACCOUNT'] = urllib.parse.quote('bot')
     response = session().send(prepared)
     try:
         loaded_response = json.loads(response.content)
@@ -68,6 +71,9 @@ def position():
     position_response = request_ftx('GET', ftx_position_endpoint)
     # print(position_response)
     try:
+        if not position_response['result']:
+            print('You do not have an open', pair_ftx, 'position!')
+            return None
         for i in position_response['result']:
             if i["future"] == pair_ftx:
                 if i["size"] == 0.0:
@@ -140,7 +146,7 @@ def request_3commas(request_type, endpoint_url, data_url=''):
     elif request_type == 'PATCH':
         send_request_3commas = requests.patch(url_request_3commas, headers=headers_request_3commas)
     else:
-        raise TypeError("Request types should be one of the 'GET', 'POST', 'DELETE', 'PATCH' options! bro...")
+        raise TypeError("Request types should be one of the 'GET', 'POST', 'DELETE', 'PATCH' options!")
     return json.loads(send_request_3commas.content)
 
 
@@ -175,7 +181,6 @@ def dca_info():
     except IndexError:
         return None
 
-# ##################### 3commas bot inputs for 50% D.D #######################
 
 pair_3commas = f"USD_{pair_ftx}"
 
@@ -259,7 +264,7 @@ def cleanup():
     for i in grid_list_cleanup:
         if (i['is_enabled'] == False) and i['total_profits_count'] == '0':
             request_3commas('DELETE', delete_grid_url.format(id=i['id']))
-            print('\n' +'Grid '+ str(i['id']) + ' ' + str(i['pair']) + ' is deleted.')
+            print('\n' + 'Grid ' + str(i['id']) + ' ' + str(i['pair']) + ' is deleted.')
     print('Clean up is completed!')
 
 
@@ -351,19 +356,20 @@ def start():
     time.sleep(40)
 
     # ########### Grid bots ############
-    entry_price=None
+    entry_price = None
     while entry_price is None:
         try:
             time.sleep(5)
             # print("entry price is:")
             # print(entry_price)
-            entry_price=dca_info()[1]
+            entry_price = dca_info()[1]
         except TypeError:
             pass
 
         print("Entry price is:")
         print(entry_price)
     # todo: BO and SO1 volumes are redundant but are still needed to calculate the balance. Should find a better way to calculate the balance.
+    # ##################### 3commas bot inputs for 50% D.D #######################
     BOH = entry_price + (entry_price * 0.04)
     BOL = entry_price + (entry_price * (-0.05))
 
@@ -401,7 +407,6 @@ def start():
     SO5O = SO1V50 * SCALE50 ** 4
     # print(str(round(SO5, 2)) + ' ' + pair_ftx)
 
-
     # print(f"Total base currency size: {round((BO + SO1 + SO2 + SO3 + SO4 + SO5), 2)}")
     # print('BOO+SO1O+SO2O+SO3O+SO4O+SO5O)/price:' + str(round((BOO + SO1O + SO2O + SO3O + SO4O + SO5O) / price_pair, 2)))
     # ##################### #Print $$$ volume (quote currency volume) ####################
@@ -411,7 +416,6 @@ def start():
     # print(str(round(SO3O, 2)) + "$")
     # print(str(round(SO4O, 2)) + "$")
     # print(str(round(SO5O, 2)) + "$")
-
 
     balance = BOO + SO1O + SO2O + SO3O + SO4O + SO5O
 
@@ -489,7 +493,7 @@ def tp(profit_tp):
             for i in grid_list_tp:
                 if i['is_enabled'] == True and i['pair'] == pair_3commas:
                     disable_grid_tp = request_3commas('POST', disable_grid_url.format(id=i['id']))
-                    print(f"\nGrid {i['id']} is disabled.\n") # + str(disable_grid_tp))
+                    print(f"\nGrid {i['id']} is disabled.\n")  # + str(disable_grid_tp))
             start()
             tp(profit_tp)
             # raise ValueError("There isn't 5 bots in the list! tp() cannot continue.")
