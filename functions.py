@@ -180,6 +180,9 @@ def dca_info():
         return [dca_low, entry_price_dca_info, safety_orders, step_percentage]
     except IndexError:
         return None
+    except TypeError as te:
+        print(te)
+        return None
 
 
 pair_3commas = f"USD_{pair_ftx}"
